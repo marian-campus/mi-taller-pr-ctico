@@ -55,6 +55,7 @@ export default function NuevoGasto() {
       date,
       paymentMethod,
       recurring,
+      includedInFixedCosts: existing?.includedInFixedCosts ?? true,
     };
     if (existing) updateExpense(expense); else addExpense(expense);
     toast.success(existing ? '¡Gasto actualizado!' : '¡Gasto registrado!');

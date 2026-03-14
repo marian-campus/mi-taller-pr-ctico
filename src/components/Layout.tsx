@@ -1,5 +1,9 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import BottomNav from './BottomNav';
+import { Menu, X, Home, BookOpen, Wallet, DollarSign, User, BarChart3, Calculator } from 'lucide-react';
+import { Button } from './ui/button';
+import { Link } from 'react-router-dom';
+import AIAssistant from './AIAssistant';
 
 interface LayoutProps {
   children: ReactNode;
@@ -7,13 +11,67 @@ interface LayoutProps {
 }
 
 export default function Layout({ children, title }: LayoutProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background pb-20">
-      {title && (
-        <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border px-4 py-3">
-          <h1 className="text-lg font-bold text-foreground">{title}</h1>
-        </header>
+      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="h-9 w-9"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+          <span className="font-bold text-lg text-primary tracking-tight">Mi Taller Contable</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {title && (
+            <h1 className="text-sm font-medium text-muted-foreground mr-2 hidden sm:block">
+              {title}
+            </h1>
+          )}
+          <AIAssistant />
+        </div>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="fixed inset-y-0 left-0 w-64 bg-card p-6 shadow-xl border-r border-border animate-in slide-in-from-left duration-300">
+            <div className="flex items-center justify-between mb-8">
+              <span className="font-bold text-lg">Menú</span>
+              <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <nav className="flex flex-col gap-2">
+              <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+                <Home className="h-5 w-5" /> Inicio
+              </Link>
+              <Link to="/bolsillo" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+                <Wallet className="h-5 w-5" /> Mi Negocio (Gastos)
+              </Link>
+              <Link to="/recetario" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+                <BookOpen className="h-5 w-5" /> Mis Costos (Recetario)
+              </Link>
+              <Link to="/precio-justo" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+                <DollarSign className="h-5 w-5" /> El Precio Justo
+              </Link>
+              <Link to="/simulador" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3 text-cta font-bold">
+                <BarChart3 className="h-5 w-5" /> Simulador Mix de Ventas
+              </Link>
+              <div className="h-px bg-border my-2" />
+              <Link to="/perfil" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+                <User className="h-5 w-5" /> Mi Perfil
+              </Link>
+            </nav>
+          </div>
+        </div>
       )}
+
       <main className="px-4 py-4 max-w-2xl mx-auto">{children}</main>
       <BottomNav />
     </div>

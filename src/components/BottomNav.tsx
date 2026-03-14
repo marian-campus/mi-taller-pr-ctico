@@ -1,13 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Wallet, DollarSign, User } from 'lucide-react';
+import { Home, BookOpen, Wallet, DollarSign, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Inicio' },
-  { to: '/recetario', icon: BookOpen, label: 'Recetario' },
-  { to: '/bolsillo', icon: Wallet, label: 'Bolsillo' },
+  { to: '/dashboard', icon: Home, label: 'Inicio' },
+  { to: '/bolsillo', icon: Wallet, label: 'Mi Negocio' },
+  { to: '/recetario', icon: BookOpen, label: 'Mis Costos' },
   { to: '/precio-justo', icon: DollarSign, label: 'Precios' },
-  { to: '/perfil', icon: User, label: 'Perfil' },
+  { to: '/perfil', icon: Settings, label: 'Perfil' },
 ];
 
 export default function BottomNav() {

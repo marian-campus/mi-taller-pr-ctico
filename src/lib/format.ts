@@ -1,4 +1,4 @@
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (amount: number, symbol: string = '$'): string => {
   const rounded = Math.round(amount);
-  return '$' + rounded.toLocaleString('es-AR');
+  return symbol + ' ' + rounded.toLocaleString('es-AR');
 };

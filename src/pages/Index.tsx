@@ -4,30 +4,62 @@ import { formatCurrency } from '@/lib/format';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
-import { Plus, Receipt, Settings } from 'lucide-react';
+import { Plus, Receipt, Settings, Download } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { generateManagementReport } from '@/lib/pdfUtils';
+import StepGuide from '@/components/StepGuide';
 
 export default function Dashboard() {
-  const { user, products, expenses } = useApp();
+  const now = new Date();
+  const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  const currentMonthName = months[now.getMonth()];
+  const currentYear = now.getFullYear();
+
+  const { user, products, expenses, totalExpenses, totalProjectedProfit, projection, loading } = useApp();
   const navigate = useNavigate();
 
-  const now = new Date();
-  const monthExpenses = expenses.filter(e => {
-    const d = new Date(e.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-  const totalExpenses = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
-  const totalRevenue = products.reduce((sum, p) => sum + (p.sellingPrice || 0), 0);
-  const totalCosts = products.reduce((sum, p) => sum + p.totalCost, 0);
-  const projectedProfit = totalRevenue - totalCosts;
+  // Authentication guard
+  useEffect(() => {
+    if (!loading && !user) {
+      console.log('No user session found, redirecting to login...');
+      navigate('/');
+    }
+  }, [loading, user, navigate]);
+
+  const handleGenerateReport = () => {
+    generateManagementReport(user!, products, expenses, totalExpenses, totalProjectedProfit, projection);
+  };
+
+  if (loading || !user) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground animate-pulse">Cargando tus datos...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">¡Hola {user.name}! 👋</h1>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground">¡Hola {user.name}! 👋</h1>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleGenerateReport}
+                className="h-8 w-8 text-primary hover:bg-primary/10"
+                title="Generar Reporte del Mes (PDF)"
+              >
+                <Download className="h-5 w-5" />
+              </Button>
+            </div>
             <p className="text-sm text-muted-foreground">{user.businessName}</p>
           </div>
           <Link to="/perfil" className="p-2 rounded-lg hover:bg-muted transition-colors">
@@ -35,21 +67,23 @@ export default function Dashboard() {
           </Link>
         </div>
 
+        <StepGuide />
+
         {/* Summary Card */}
-        <Card className="p-5 bg-primary text-primary-foreground rounded-2xl">
-          <h2 className="text-sm font-medium opacity-90">Resumen del mes</h2>
-          <div className="grid grid-cols-3 gap-4 mt-3">
-            <div>
-              <p className="text-2xl font-bold">{products.length}</p>
-              <p className="text-xs opacity-80">Productos</p>
+        <Card className="p-6 bg-primary text-primary-foreground rounded-3xl shadow-xl shadow-primary/20">
+          <h2 className="text-xs font-bold opacity-80 uppercase tracking-widest">Resumen de {currentMonthName} {currentYear}</h2>
+          <div className="grid grid-cols-3 gap-2 mt-4">
+            <div className="space-y-1">
+              <p className="text-2xl font-black">{products.filter(p => p.active !== false).length}</p>
+              <p className="text-[10px] opacity-80 uppercase font-bold leading-tight">Productos<br />activos</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{formatCurrency(totalExpenses)}</p>
-              <p className="text-xs opacity-80">Gastos</p>
+            <div className="space-y-1 border-l border-white/20 pl-4">
+              <p className="text-2xl font-black">{formatCurrency(totalExpenses, user?.currencySymbol)}</p>
+              <p className="text-[10px] opacity-80 uppercase font-bold leading-tight">Gastos de<br />este mes</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold">{formatCurrency(projectedProfit)}</p>
-              <p className="text-xs opacity-80">Ganancia</p>
+            <div className="space-y-1 border-l border-white/20 pl-4">
+              <p className="text-2xl font-black">{formatCurrency(totalProjectedProfit - totalExpenses, user?.currencySymbol)}</p>
+              <p className="text-[10px] opacity-80 uppercase font-bold leading-tight text-cta-foreground">Ganancia<br />Neta</p>
             </div>
           </div>
         </Card>
@@ -57,10 +91,10 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="flex gap-3">
           <Button onClick={() => navigate('/recetario/nuevo')} className="flex-1 gap-2 h-12 rounded-xl">
-            <Plus className="h-4 w-4" /> Nueva Receta
+            <Plus className="h-4 w-4" /> Nuevo Producto
           </Button>
           <Button variant="cta" onClick={() => navigate('/bolsillo/nuevo')} className="flex-1 gap-2 h-12 rounded-xl">
-            <Receipt className="h-4 w-4" /> Nuevo Gasto
+            <Receipt className="h-4 w-4" /> Nuevo Gasto Negocio
           </Button>
         </div>
 
@@ -71,16 +105,16 @@ export default function Dashboard() {
             <Card className="p-8 text-center rounded-xl">
               <p className="text-3xl mb-2">📦</p>
               <p className="text-muted-foreground mb-3">Aún no creaste productos. ¡Empezá ahora!</p>
-              <Button onClick={() => navigate('/recetario/nuevo')}>+ Nueva Receta</Button>
+              <Button onClick={() => navigate('/recetario/nuevo')}>+ Nuevo Producto</Button>
             </Card>
           ) : (
             <div className="space-y-3">
-              {products.slice(-3).reverse().map(p => (
-                <ProductCard key={p.id} product={p} />
+              {products.filter(p => p.active !== false).slice(-3).reverse().map(p => (
+                <ProductCard key={p.id} product={p} variant="simple" />
               ))}
-              {products.length > 3 && (
+              {products.length > 0 && (
                 <Button variant="ghost" onClick={() => navigate('/recetario')} className="w-full text-primary">
-                  Ver todos los productos →
+                  {products.length > 3 ? `Ver los ${products.length} productos →` : 'Ver todos los productos →'}
                 </Button>
               )}
             </div>
@@ -90,3 +124,4 @@ export default function Dashboard() {
     </Layout>
   );
 }
+

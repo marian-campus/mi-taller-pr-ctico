@@ -23,13 +23,14 @@ export interface Product {
   category: string;
   ingredients: RecipeIngredient[];
   packaging: RecipeIngredient[];
-  services: { hours: number; minutes: number; cost: number };
+  services?: { hours: number; minutes: number; cost: number };
   labor: { hours: number; minutes: number; cost: number };
   includeFixedCosts: boolean;
   estimatedUnitsPerMonth: number;
   fixedCostPerUnit: number;
   totalCost: number;
   sellingPrice?: number;
+  active: boolean;
   createdAt: string;
 }
 
@@ -41,19 +42,20 @@ export interface Expense {
   date: string;
   paymentMethod: string;
   recurring: boolean;
+  includedInFixedCosts?: boolean;
 }
 
 export interface UserSettings {
+  id: string;
   name: string;
   businessName: string;
   businessCategory: string;
   startDate: string;
   location: string;
   hourlyRate: number;
-  electricityCostPerHour: number;
-  gasCostPerHour: number;
-  waterCostPerLiter: number;
-  fixedCosts: { name: string; amount: number }[];
-  transportMode: 'per-trip' | 'percentage';
-  transportPercentage: number;
+  monthlySalary: number;
+  monthlyWorkingHours: number;
+  country: string;
+  currencySymbol: string;
+  language: string;
 }
