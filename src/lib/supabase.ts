@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const rawUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Diagnostic logs for production debugging
-console.log('🔍 [Diagnostic] URL present:', !!supabaseUrl);
-if (supabaseAnonKey) {
-  console.log(`🔍 [Diagnostic] Key present (Length: ${supabaseAnonKey.length}, Format: ${supabaseAnonKey.startsWith('eyJ') ? 'JWT OK' : 'INVALID FORMAT'})`);
-} else {
-  console.error('❌ [Diagnostic] Key is missing in environment variables.');
+// Clean variables (remove quotes and whitespace)
+const supabaseUrl = rawUrl?.trim().replace(/^["'](.+)["']$/, '$1');
+const supabaseAnonKey = rawKey?.trim().replace(/^["'](.+)["']$/, '$1');
+
+// Advanced Diagnostic
+if (rawKey) {
+  console.log(`🔍 [Diagnostic] Raw Key Length: ${rawKey.length}`);
+  if (rawKey !== supabaseAnonKey) {
+    console.warn('⚠️ [Diagnostic] Key had quotes or whitespace that were removed automatically.');
+  }
+  console.log(`🔍 [Diagnostic] Final Key Format: ${supabaseAnonKey?.startsWith('eyJ') ? 'JWT OK' : 'INVALID (Starts with: ' + supabaseAnonKey?.substring(0, 3) + '...)'}`);
 }
 
 if (!supabaseUrl || !supabaseAnonKey) {
