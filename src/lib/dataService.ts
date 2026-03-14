@@ -239,10 +239,30 @@ export const dataService = {
     },
 
     async createProduct(product: Partial<Product>, ingredients: Record<string, any>[], userId: string) {
-        const payload = {
-            ...product,
-            user_id: userId
+        const payload: any = {
+            user_id: userId,
+            name: product.name,
+            category: product.category,
+            include_fixed_costs: product.includeFixedCosts,
+            fixed_cost_per_unit: product.fixedCostPerUnit,
+            total_cost: product.totalCost,
+            selling_price: product.sellingPrice,
+            active: product.active,
+            estimated_units_per_month: product.estimatedUnitsPerMonth
         };
+
+        if (product.labor) {
+            payload.labor_hours = product.labor.hours;
+            payload.labor_minutes = product.labor.minutes;
+            payload.labor_cost = product.labor.cost;
+        }
+
+        if (product.services) {
+            payload.services_hours = product.services.hours;
+            payload.services_minutes = product.services.minutes;
+            payload.services_cost = product.services.cost;
+        }
+
         const { data: prodData, error: prodError } = await supabase
             .from('products')
             .insert([payload])

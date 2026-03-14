@@ -1,6 +1,7 @@
 import { Supply, Product, Expense, UserSettings } from '@/types';
 
 export const defaultSettings: UserSettings = {
+  id: 'default-user',
   name: 'Maru',
   businessName: 'Dulces de Maru',
   businessCategory: 'gastronomia',
