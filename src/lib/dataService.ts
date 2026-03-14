@@ -45,24 +45,25 @@ export const dataService = {
 
     async createProfile(profile: UserSettings & { id: string }) {
         console.log('Upserting profile for user:', profile.id);
+        // Fully defensive payload: Only include the most basic fields first
         const payload: any = {
             id: profile.id,
-            name: profile.name || 'Usuario',
-            business_name: profile.businessName || 'Mi Negocio',
-            business_category: profile.businessCategory || 'gastronomia',
-            start_date: profile.startDate || new Date().toISOString().split('T')[0],
-            location: profile.location || '',
-            hourly_rate: Number(profile.hourlyRate) || 0,
-            monthly_salary: Number(profile.monthlySalary) || 0,
-            monthly_working_hours: Number(profile.monthlyWorkingHours) || 0,
-            currency_symbol: profile.currencySymbol || '$',
-            language: profile.language || 'es'
+            name: profile.name || 'Usuario'
         };
 
-        // Only add country if it's provided, to avoid schema errors if the column is missing
-        if (profile.country) {
-            payload.country = profile.country;
-        }
+        // Add optional fields only if they exist in the object provided
+        // This prevents PGRST204 errors if the columns are missing in Supabase
+        if (profile.businessName) payload.business_name = profile.businessName;
+        if (profile.businessCategory) payload.business_category = profile.businessCategory;
+        if (profile.startDate) payload.start_date = profile.startDate;
+        if (profile.location) payload.location = profile.location;
+        if (profile.hourlyRate !== undefined) payload.hourly_rate = Number(profile.hourlyRate);
+        if (profile.monthlySalary !== undefined) payload.monthly_salary = Number(profile.monthlySalary);
+        if (profile.monthlyWorkingHours !== undefined) payload.monthly_working_hours = Number(profile.monthlyWorkingHours);
+        if (profile.currencySymbol) payload.currency_symbol = profile.currencySymbol;
+        if (profile.language) payload.language = profile.language;
+        if (profile.country) payload.country = profile.country;
+
 
         const { data, error } = await supabase
             .from('profiles')
