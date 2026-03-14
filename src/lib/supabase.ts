@@ -4,8 +4,11 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ Supabase credentials missing. Check your .env file.');
+  const errorMessage = '❌ Error: Variables de entorno no detectadas. Verifica la configuración en Vercel (deben incluir el prefijo VITE_).';
+  console.error(errorMessage);
 }
 
-// Fallback to empty strings but avoid passing undefined to createClient
-export const supabase = createClient(supabaseUrl || 'https://placeholder.supabase.co', supabaseAnonKey || 'placeholder');
+export const supabase = createClient(
+  supabaseUrl || '',
+  supabaseAnonKey || ''
+);
