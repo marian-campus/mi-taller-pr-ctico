@@ -70,16 +70,21 @@ export const dataService = {
             .select();
 
         if (error) {
-            console.error('Supabase error in createProfile/upsert:', error);
+            console.error('❌ Supabase error in createProfile/upsert:', error.message, error.details, error.hint, error.code);
+            console.error('Payload attempted:', payload);
+            
             // Intento desesperado: solo ID y Nombre
-            console.warn('Attempting minimal profile creation...');
+            console.warn('⚠️ Attempting minimal profile creation...');
             const minimalPayload = { id: profile.id, name: profile.name || 'Usuario' };
             const { data: minData, error: minError } = await supabase
                 .from('profiles')
                 .upsert(minimalPayload, { onConflict: 'id' })
                 .select();
 
-            if (minError) throw minError;
+            if (minError) {
+                console.error('❌ Minimal profile creation also failed:', minError.message, minError.code);
+                throw minError;
+            }
             return minData ? minData[0] : null;
         }
         return data ? data[0] : null;
