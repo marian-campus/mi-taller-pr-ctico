@@ -59,7 +59,12 @@ export default function Register() {
             }
         } catch (err: any) {
             console.error(err);
-            toast.error(err.message || 'Error al crear la cuenta');
+            // Error de RLS en Supabase es usualmente 42501
+            if (err.code === '42501' || (err.message && err.message.toLowerCase().includes('row-level security'))) {
+                toast.error('Error de permisos en la base de datos. Por favor, verifica las políticas de seguridad.');
+            } else {
+                toast.error(err.message || 'Error al crear la cuenta');
+            }
         } finally {
             setLoading(false);
         }
