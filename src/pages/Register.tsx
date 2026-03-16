@@ -33,6 +33,11 @@ export default function Register() {
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: form.email,
                 password: form.password,
+                options: {
+                    data: {
+                        first_name: form.firstName,
+                    }
+                }
             });
 
             if (authError) throw authError;
