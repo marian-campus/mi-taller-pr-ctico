@@ -44,24 +44,28 @@ export default function Register() {
             if (authError) throw authError;
 
             if (authData.user) {
-                // Create initial profile
-                await dataService.createProfile({
-                    id: authData.user.id,
-                    name: form.firstName,
-                    businessName: form.businessName,
-                    businessCategory: 'gastronomia',
-                    startDate: new Date().toISOString().split('T')[0],
-                    location: '',
-                    hourlyRate: 0,
-                    monthlySalary: 0,
-                    monthlyWorkingHours: 0,
-                    country: '',
-                    currencySymbol: '$',
-                    language: 'es'
-                });
+                // Create initial profile (Resilient: if this fails by RLS, AppContext will heal it in Dashboard)
+                try {
+                    await dataService.createProfile({
+                        id: authData.user.id,
+                        name: form.firstName,
+                        businessName: form.businessName,
+                        businessCategory: 'gastronomia',
+                        startDate: new Date().toISOString().split('T')[0],
+                        location: '',
+                        hourlyRate: 0,
+                        monthlySalary: 0,
+                        monthlyWorkingHours: 0,
+                        country: '',
+                        currencySymbol: '$',
+                        language: 'es'
+                    });
+                } catch (profileError) {
+                    console.warn('⚠️ Initial profile creation failed (probably RLS). Healing will occur in Dashboard.', profileError);
+                }
 
-                toast.success('¡Cuenta creada con éxito!');
-                navigate('/dashboard');
+                toast.success('¡Iniciando registro! Revisa tu email para confirmar.');
+                navigate('/'); // Redirect to landing (login)
             }
         } catch (err: any) {
             console.error(err);

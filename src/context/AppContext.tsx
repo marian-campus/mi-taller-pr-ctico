@@ -132,7 +132,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       console.log("☁️ START sync with cloud for:", userId);
 
-      // Use a race to avoid hanging the entire app if one request is slow
       const fetchWithTimeout = async (promise: Promise<any>, name: string) => {
         return Promise.race([
           promise,
@@ -141,16 +140,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
 
       console.log("🔍 Fetching profile...");
-      const profile = await fetchWithTimeout(dataService.getProfile(userId), "profile");
-      console.log("✅ Profile fetched:", !!profile);
+      let profile = await fetchWithTimeout(dataService.getProfile(userId), "profile");
+      
+      // --- SELF-HEALING: Crear perfil si no existe ---
+      if (!profile) {
+        console.warn("⚠️ Profile missing for authenticated user. Attempting self-healing...");
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          try {
+            profile = await dataService.createProfile({
+              id: authUser.id,
+              name: authUser.user_metadata?.first_name || 'Usuario',
+              businessName: 'Mi Negocio',
+              businessCategory: 'gastronomia',
+              startDate: new Date().toISOString().split('T')[0],
+              location: '',
+              hourlyRate: 0,
+              monthlySalary: 0,
+              monthlyWorkingHours: 0,
+              country: '',
+              currencySymbol: '$',
+              language: 'es'
+            });
+            console.log("✅ Profile healed successfully.");
+          } catch (healError) {
+            console.error("❌ Failed to heal profile:", healError);
+          }
+        }
+      }
 
       if (profile) {
         setUserState(profile);
         localStorage.setItem('user_settings', JSON.stringify(profile));
-
-        console.log("🔍 Fetching data tables...");
-
-        // Execute background fetches in parallel with individual error handling
+        // ... rest of the sync
         const [supps, prods, exps] = await Promise.all([
           fetchWithTimeout(dataService.getSupplies(), "supplies").catch(e => { console.error(e); return null; }),
           fetchWithTimeout(dataService.getProducts(), "products").catch(e => { console.error(e); return null; }),
@@ -171,9 +193,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         console.log("☁️ END sync with cloud.");
+      } else {
+        // Si después de todo no hay perfil, al menos apagamos el loading si es necesario
+        setLoading(false);
       }
     } catch (err) {
       console.error("❌ error in refreshUserData:", err);
+      setLoading(false);
     }
   }
 
