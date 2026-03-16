@@ -36,7 +36,8 @@ export default function Register() {
                 options: {
                     data: {
                         first_name: form.firstName,
-                    }
+                    },
+                    emailRedirectTo: 'https://mi-taller-pr-ctico.vercel.app/dashboard'
                 }
             });
 
