@@ -21,35 +21,49 @@ import { ThemeProvider } from "./components/theme-provider";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme" attribute="class">
-        <AppProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/recover" element={<RecoverPassword />} />
-              <Route path="/dashboard" element={<Index />} />
-              <Route path="/recetario" element={<Recetario />} />
-              <Route path="/recetario/nuevo" element={<CrearProducto />} />
-              <Route path="/recetario/:id" element={<CrearProducto />} />
-              <Route path="/bolsillo" element={<Bolsillo />} />
-              <Route path="/bolsillo/nuevo" element={<NuevoGasto />} />
-              <Route path="/bolsillo/:id" element={<NuevoGasto />} />
-              <Route path="/precio-justo" element={<PrecioJusto />} />
-              <Route path="/simulador" element={<SimuladorMix />} />
-              <Route path="/perfil" element={<Perfil />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AppProvider>
-      </ThemeProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    // Cleanup Supabase tokens from URL hash
+    if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('error_description'))) {
+      console.log("🛠️ Auth hash detected, cleaning up URL...");
+      // We don't clear immediately to let Supabase Client consume it, 
+      // but we can at least remove it from history after a short delay
+      setTimeout(() => {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }, 500);
+    }
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme" attribute="class">
+          <AppProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/recover" element={<RecoverPassword />} />
+                <Route path="/dashboard" element={<Index />} />
+                <Route path="/recetario" element={<Recetario />} />
+                <Route path="/recetario/nuevo" element={<CrearProducto />} />
+                <Route path="/recetario/:id" element={<CrearProducto />} />
+                <Route path="/bolsillo" element={<Bolsillo />} />
+                <Route path="/bolsillo/nuevo" element={<NuevoGasto />} />
+                <Route path="/bolsillo/:id" element={<NuevoGasto />} />
+                <Route path="/precio-justo" element={<PrecioJusto />} />
+                <Route path="/simulador" element={<SimuladorMix />} />
+                <Route path="/perfil" element={<Perfil />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </AppProvider>
+        </ThemeProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
