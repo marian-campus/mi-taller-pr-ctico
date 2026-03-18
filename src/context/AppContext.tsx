@@ -26,6 +26,7 @@ interface AppContextType {
   updateProjection: (id: string, field: 'enabled' | 'qty', value: any) => void;
   totalProjectedProfit: number;
   loading: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -392,7 +393,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       supplies, addSupply, updateSupply, deleteSupply,
       totalExpenses,
       projection, setProjection, updateProjection, totalProjectedProfit,
-      loading
+      loading,
+      signOut: async () => {
+        await supabase.auth.signOut();
+      }
     }}>
       {children}
     </AppContext.Provider>

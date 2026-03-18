@@ -1,9 +1,21 @@
 import { ReactNode, useState } from 'react';
 import BottomNav from './BottomNav';
-import { Menu, X, Home, BookOpen, Wallet, DollarSign, User, BarChart3, Calculator } from 'lucide-react';
+import { Menu, X, Home, BookOpen, Wallet, DollarSign, User, BarChart3, Calculator, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AIAssistant from './AIAssistant';
+import { useApp } from '@/context/AppContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface LayoutProps {
   children: ReactNode;
@@ -12,6 +24,14 @@ interface LayoutProps {
 
 export default function Layout({ children, title }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { signOut } = useApp();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    setIsMenuOpen(false);
+    await signOut();
+    navigate('/?logout=true');
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -67,6 +87,30 @@ export default function Layout({ children, title }: LayoutProps) {
               <Link to="/perfil" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
                 <User className="h-5 w-5" /> Mi Perfil
               </Link>
+              
+              <div className="mt-auto pt-4">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button className="w-full px-4 py-3 rounded-xl hover:bg-destructive/10 hover:text-destructive font-medium flex items-center gap-3 transition-colors text-muted-foreground">
+                      <LogOut className="h-5 w-5" /> Cerrar Sesión
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Estás seguro de que quieres salir?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Se cerrará tu sesión actual y deberás volver a ingresar para acceder a tus datos.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Cerrar Sesión
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </nav>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,21 @@ export default function Landing() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const [searchParams] = useSearchParams();
+
+    // 0. Mostrar mensaje de logout si viene en la URL
+    useEffect(() => {
+        if (searchParams.get('logout') === 'true') {
+            toast.success('Has cerrado sesión correctamente. ¡Vuelve pronto!', {
+                id: 'logout-success',
+            });
+            // Limpiar el parámetro de la URL
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete('logout');
+            navigate(`/?${newParams.toString()}`, { replace: true });
+        }
+    }, [searchParams, navigate]);
 
     // 1. Limpiar rastro de sesiones anteriores al montar el login (Solo si no hay sesión real)
     useEffect(() => {
