@@ -59,8 +59,8 @@ export default function Layout({ children, title }: LayoutProps) {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl border-r border-border animate-in slide-in-from-left duration-300 flex flex-col h-screen max-h-screen overflow-hidden">
+        <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl border-r border-border animate-in slide-in-from-left duration-300 flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden">
             <div className="flex items-center justify-between p-6 shrink-0 border-b border-border/50 bg-card z-20">
               <span className="font-bold text-lg">Menú</span>
               <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
