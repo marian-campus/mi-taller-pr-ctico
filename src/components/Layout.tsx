@@ -60,14 +60,14 @@ export default function Layout({ children, title }: LayoutProps) {
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl border-r border-border animate-in slide-in-from-left duration-300 flex flex-col">
-            <div className="flex items-center justify-between p-6 mb-2 shrink-0 border-b border-border/50">
+          <div className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl border-r border-border animate-in slide-in-from-left duration-300 flex flex-col h-screen max-h-screen overflow-hidden">
+            <div className="flex items-center justify-between p-6 shrink-0 border-b border-border/50 bg-card z-20">
               <span className="font-bold text-lg">Menú</span>
               <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <nav className="flex flex-col gap-2 p-6 overflow-y-auto flex-1 pb-24">
+            <nav className="flex-1 overflow-y-auto p-4 space-y-1 min-h-0 bg-card/50">
               <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
                 <Home className="h-5 w-5" /> Inicio
               </Link>
@@ -89,10 +89,10 @@ export default function Layout({ children, title }: LayoutProps) {
               </Link>
             </nav>
             
-            <div className="mt-auto p-6 pt-4 sticky bottom-0 bg-card border-t border-border animate-in fade-in duration-500">
+            <div className="p-4 pt-4 shrink-0 border-t border-border bg-card z-20 shadow-[0_-8px_15px_-5px_rgba(0,0,0,0.1)]">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <button className="w-full px-4 py-3 rounded-xl hover:bg-destructive/10 hover:text-destructive font-medium flex items-center gap-3 transition-colors text-muted-foreground group">
+                  <button className="w-full px-4 py-3 rounded-xl bg-destructive/5 text-destructive border border-destructive/10 hover:bg-destructive hover:text-white font-bold flex items-center justify-center gap-3 transition-all group">
                     <LogOut className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" /> Cerrar Sesión
                   </button>
                 </AlertDialogTrigger>
