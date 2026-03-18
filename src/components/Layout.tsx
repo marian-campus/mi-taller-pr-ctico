@@ -60,14 +60,14 @@ export default function Layout({ children, title }: LayoutProps) {
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="fixed inset-y-0 left-0 w-64 bg-card p-6 shadow-xl border-r border-border animate-in slide-in-from-left duration-300">
-            <div className="flex items-center justify-between mb-8">
+          <div className="fixed inset-y-0 left-0 w-64 bg-card shadow-xl border-r border-border animate-in slide-in-from-left duration-300 flex flex-col">
+            <div className="flex items-center justify-between p-6 mb-2 shrink-0 border-b border-border/50">
               <span className="font-bold text-lg">Menú</span>
               <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-2 p-6 overflow-y-auto flex-1 pb-24">
               <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
                 <Home className="h-5 w-5" /> Inicio
               </Link>
@@ -87,31 +87,31 @@ export default function Layout({ children, title }: LayoutProps) {
               <Link to="/perfil" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
                 <User className="h-5 w-5" /> Mi Perfil
               </Link>
-              
-              <div className="mt-auto pt-4">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <button className="w-full px-4 py-3 rounded-xl hover:bg-destructive/10 hover:text-destructive font-medium flex items-center gap-3 transition-colors text-muted-foreground">
-                      <LogOut className="h-5 w-5" /> Cerrar Sesión
-                    </button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>¿Estás seguro de que quieres salir?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Se cerrará tu sesión actual y deberás volver a ingresar para acceder a tus datos.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        Cerrar Sesión
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
             </nav>
+            
+            <div className="mt-auto p-6 pt-4 sticky bottom-0 bg-card border-t border-border animate-in fade-in duration-500">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="w-full px-4 py-3 rounded-xl hover:bg-destructive/10 hover:text-destructive font-medium flex items-center gap-3 transition-colors text-muted-foreground group">
+                    <LogOut className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" /> Cerrar Sesión
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás seguro de que quieres salir?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Se cerrará tu sesión actual y deberás volver a ingresar para acceder a tus datos.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Cerrar Sesión
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
         </div>
       )}
