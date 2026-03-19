@@ -67,13 +67,19 @@ export default function Register() {
                 toast.success('¡Iniciando registro! Revisa tu email para confirmar.');
                 navigate('/'); // Redirect to landing (login)
             }
-        } catch (err: any) {
-            console.error(err);
+        } catch (error: unknown) {
+            console.error(error);
+            const err = error as Error; // Cast to Error to access message property
+
             // Error de RLS en Supabase es usualmente 42501
-            if (err.code === '42501' || (err.message && err.message.toLowerCase().includes('row-level security'))) {
+            // Check if the error has a 'code' property and if it's 42501, or if the message includes 'row-level security'
+            if (
+                (typeof error === 'object' && error !== null && 'code' in error && (error as { code: string }).code === '42501') ||
+                (err.message && err.message.toLowerCase().includes('row-level security'))
+            ) {
                 toast.error('Error de permisos en la base de datos. Por favor, verifica las políticas de seguridad.');
             } else {
-                toast.error(err.message || 'Error al crear la cuenta');
+                toast.error(err.message || 'Error al registrarse');
             }
         } finally {
             setLoading(false);

@@ -25,10 +25,10 @@ export const dataService = {
         return this.mapProfile(data);
     },
 
-    mapProfile(data: Record<string, any>): UserSettings {
+    mapProfile(data: Record<string, unknown>): UserSettings {
         return {
-            id: data.id,
-            name: data.name || 'Usuario',
+            id: data.id as string,
+            name: (data.name as string) || 'Usuario',
             businessName: data.business_name || 'Mi Negocio',
             businessCategory: data.business_category || 'gastronomia',
             startDate: data.start_date || new Date().toISOString().split('T')[0],
@@ -45,7 +45,7 @@ export const dataService = {
     async createProfile(profile: UserSettings & { id: string }) {
         console.log('Upserting profile for user:', profile.id);
         // Fully defensive payload: Only include the most basic fields first
-        const payload: any = {
+        const payload: Record<string, unknown> = {
             id: profile.id,
             name: profile.name || 'Usuario'
         };
@@ -91,7 +91,7 @@ export const dataService = {
     },
 
     async updateProfile(userId: string, profile: Partial<UserSettings>) {
-        const payload: any = {};
+        const payload: Record<string, unknown> = {};
         if (profile.name !== undefined) payload.name = profile.name;
         if (profile.businessName !== undefined) payload.business_name = profile.businessName;
         if (profile.businessCategory !== undefined) payload.business_category = profile.businessCategory;
@@ -167,7 +167,7 @@ export const dataService = {
     },
 
     async updateSupply(id: string, supply: Partial<Supply>) {
-        const payload: any = {};
+        const payload: Record<string, unknown> = {};
         if (supply.name !== undefined) payload.name = supply.name;
         if (supply.category !== undefined) payload.category = supply.category;
         if (supply.quantityBought !== undefined) payload.quantity_bought = supply.quantityBought;
@@ -230,7 +230,7 @@ export const dataService = {
             sellingPrice: p.selling_price ? Number(p.selling_price) : undefined,
             active: p.active !== false,
             createdAt: p.created_at,
-            ingredients: (p.ingredients || []).filter((i: any) => !i.is_packaging).map((i: any) => ({
+            ingredients: (p.ingredients || []).filter((i: Record<string, unknown>) => !i.is_packaging).map((i: Record<string, unknown>) => ({
                 id: i.id,
                 supplyId: i.supply_id,
                 name: i.name || 'Ingrediente',
@@ -238,7 +238,7 @@ export const dataService = {
                 unit: i.unit || 'un',
                 cost: Number(i.cost) || 0
             })),
-            packaging: (p.ingredients || []).filter((i: any) => i.is_packaging).map((i: any) => ({
+            packaging: (p.ingredients || []).filter((i: Record<string, unknown>) => i.is_packaging).map((i: Record<string, unknown>) => ({
                 id: i.id,
                 supplyId: i.supply_id,
                 name: i.name || 'Envase',
@@ -251,8 +251,8 @@ export const dataService = {
         return mapped;
     },
 
-    async createProduct(product: Partial<Product>, ingredients: Record<string, any>[], userId: string) {
-        const payload: any = {
+    async createProduct(product: Partial<Product>, ingredients: Record<string, unknown>[], userId: string) {
+        const payload: Record<string, unknown> = {
             user_id: userId,
             name: product.name,
             category: product.category,
@@ -303,8 +303,8 @@ export const dataService = {
         return prodData[0];
     },
 
-    async updateProduct(id: string, product: Partial<Product>, ingredients?: Record<string, any>[]) {
-        const payload: any = {};
+    async updateProduct(id: string, product: Partial<Product>, ingredients?: Record<string, unknown>[]) {
+        const payload: Record<string, unknown> = {};
         if (product.name !== undefined) payload.name = product.name;
         if (product.category !== undefined) payload.category = product.category;
         if (product.labor !== undefined) {
@@ -429,7 +429,7 @@ export const dataService = {
     },
 
     async updateExpense(id: string, expense: Partial<Expense>) {
-        const payload: any = {};
+        const payload: Record<string, unknown> = {};
         if (expense.description !== undefined) payload.description = expense.description;
         if (expense.category !== undefined) payload.category = expense.category;
         if (expense.amount !== undefined) payload.amount = expense.amount;

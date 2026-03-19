@@ -120,7 +120,7 @@ export default function AIAssistant() {
             };
 
             setMessages((prev) => [...prev, assistantMessage]);
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error in assistant:', error);
             setMessages((prev) => [
                 ...prev,

@@ -88,31 +88,6 @@ export default function CrearProducto() {
   const [tempPP, setTempPP] = useState('');
   const [tempQB, setTempQB] = useState('');
 
-  // Conditional returns MUST come after ALL useState/useMemo/useEffect/useCallback calls
-  // If ID is provided but product not found, show error
-  if (id && !existing) {
-    return (
-      <Layout title="Producto no encontrado">
-        <div className="text-center py-20 px-4">
-          <p className="text-4xl mb-4">🔍</p>
-          <p className="text-muted-foreground">No pudimos encontrar el producto solicitado.</p>
-          <Button onClick={() => navigate('/recetario')} className="mt-6">Volver al Recetario</Button>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground animate-pulse">Cargando tus datos...</p>
-        </div>
-      </Layout>
-    );
-  }
-
   // Calculations
   const ingCost = ingredients.reduce((s, i) => s + i.cost, 0);
   const packCost = usePackaging ? packaging.reduce((s, i) => s + (i.enabled !== false ? i.cost : 0), 0) : 0;
@@ -212,6 +187,30 @@ export default function CrearProducto() {
     supplies.find(s => s.name.trim().toLowerCase() === newName.trim().toLowerCase()),
     [supplies, newName]
   );
+
+  // Conditional returns MUST come after ALL useState/useMemo/useEffect/useCallback calls
+  if (id && !existing) {
+    return (
+      <Layout title="Producto no encontrado">
+        <div className="text-center py-20 px-4">
+          <p className="text-4xl mb-4">🔍</p>
+          <p className="text-muted-foreground">No pudimos encontrar el producto solicitado.</p>
+          <Button onClick={() => navigate('/recetario')} className="mt-6">Volver al Recetario</Button>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground animate-pulse">Cargando tus datos...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   const handleSupplyDetailBlur = (supply: Supply) => {
     const pp = parseFloat(tempPP);
@@ -323,9 +322,10 @@ export default function CrearProducto() {
         toast.success('🎯 ¡Producto guardado!');
       }
       navigate('/recetario');
-    } catch (err: any) {
-      console.error("❌ Error saving product:", err);
-      toast.error('Error al guardar: ' + (err.message || 'Error desconocido'));
+    } catch (err) {
+      const error = err as Error;
+      console.error("❌ Error saving product:", error);
+      toast.error('Error al guardar: ' + (error.message || 'Error desconocido'));
     }
   };
 

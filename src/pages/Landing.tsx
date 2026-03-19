@@ -103,7 +103,8 @@ export default function Landing() {
                 }
             }, 3000);
 
-        } catch (err: any) {
+        } catch (error) {
+            const err = error as Error;
             console.error("❌ Login error:", err);
             toast.error(err.message || 'Error al iniciar sesión');
             setLoading(false);

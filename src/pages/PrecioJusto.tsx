@@ -27,7 +27,7 @@ export default function PrecioJusto() {
     if (products.length > 0 && !selectedId) {
       setSelectedId(products[0].id);
     }
-  }, [products]);
+  }, [products, selectedId]);
 
   if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando datos...</div></Layout>;
 

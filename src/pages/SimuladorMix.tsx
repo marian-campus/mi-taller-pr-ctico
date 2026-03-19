@@ -20,11 +20,8 @@ import { AlertCircle, Rocket } from 'lucide-react';
 
 export default function SimuladorMix() {
     const context = useApp();
-
-    if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando simulador...</div></Layout>;
-
-    const { products = [], user, projection, setProjection, updateProjection, totalProjectedProfit, totalExpenses } = context;
-
+    const { products = [], user, projection, setProjection, updateProjection, totalProjectedProfit, totalExpenses } = context || { products: [], user: null, projection: {}, setProjection: () => {}, updateProjection: () => {}, totalProjectedProfit: 0, totalExpenses: 0 };
+    
     // Sync projection state when products load
     useEffect(() => {
         if (products.length > 0 && Object.keys(projection).length === 0) {
@@ -34,7 +31,7 @@ export default function SimuladorMix() {
             }), {});
             setProjection(initial);
         }
-    }, [products]);
+    }, [products, projection, setProjection]);
 
     // 3. Survival Progress
     const { survivalPercentage, netProfit, isBreakEvenReached } = useMemo(() => {
@@ -50,6 +47,8 @@ export default function SimuladorMix() {
             isBreakEvenReached: net >= 0
         };
     }, [totalExpenses, totalProjectedProfit]);
+
+    if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando simulador...</div></Layout>;
 
     return (
         <Layout title="📊 Simulador Mix de Ventas">

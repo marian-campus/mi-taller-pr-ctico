@@ -52,7 +52,7 @@ export const generateManagementReport = (
     });
 
     // 2. Productos Activos
-    const finalY1 = (doc as any).lastAutoTable.finalY + 15;
+    const finalY1 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
     doc.text('2. Productos Activos y Costos', 14, finalY1);
 
     const activeProducts = products.filter(p => p.active !== false);
@@ -72,7 +72,7 @@ export const generateManagementReport = (
     });
 
     // 3. Proyección de Rentabilidad (Simulator Results)
-    const finalY2 = (doc as any).lastAutoTable.finalY + 15;
+    const finalY2 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
     doc.text('3. Proyección de Rentabilidad (Mix de Ventas)', 14, finalY2);
 
     const simulatorData = activeProducts.map(p => {
@@ -98,7 +98,7 @@ export const generateManagementReport = (
     });
 
     // Final Summary
-    const finalY3 = (doc as any).lastAutoTable.finalY + 15;
+    const finalY3 = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15;
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('Resumen Final', 14, finalY3);
