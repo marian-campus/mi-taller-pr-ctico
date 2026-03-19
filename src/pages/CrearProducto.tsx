@@ -484,7 +484,7 @@ export default function CrearProducto() {
                       <div className="flex items-center gap-1">
                         <Input
                           type="number"
-                          value={ing.quantityUsed || ''}
+                          value={ing.quantityUsed}
                           onChange={e => updateItemQty(ing.id, e.target.value, 'ingredients')}
                           className="w-16 h-7 text-xs px-1 text-center"
                           step="any"
@@ -693,7 +693,7 @@ export default function CrearProducto() {
                           <div className="flex items-center gap-1 mx-2">
                             <Input
                               type="number"
-                              value={p.quantityUsed || ''}
+                              value={p.quantityUsed}
                               onChange={e => updateItemQty(p.id, e.target.value, 'packaging')}
                               className="w-14 h-7 text-xs px-1 text-center"
                               step="any"

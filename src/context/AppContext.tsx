@@ -235,7 +235,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const newProd = await dataService.createProduct(p, ingredients, user.id);
       setProducts(prev => {
-        const next = [newProd, ...prev];
+        const next = [newProd as Product, ...prev];
         localStorage.setItem('products', JSON.stringify(next));
         return next;
       });
@@ -249,11 +249,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user?.id) return;
     try {
       await dataService.updateProduct(p.id, p, ingredients);
-      setProducts(prev => {
-        const next = prev.map(x => x.id === p.id ? { ...p, ingredients: ingredients || p.ingredients } : x);
-        localStorage.setItem('products', JSON.stringify(next));
-        return next;
-      });
+      
+      // Fetch the updated product to ensure consistent state
+      const userId = user.id;
+      const updatedProducts = await dataService.getProducts(userId);
+      setProducts(updatedProducts);
+      localStorage.setItem('products', JSON.stringify(updatedProducts));
+      
       toast.success('Producto actualizado');
     } catch (err) {
       console.error('Error updating product:', err);

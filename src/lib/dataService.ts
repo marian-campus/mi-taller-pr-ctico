@@ -192,30 +192,8 @@ export const dataService = {
     },
 
     // Products
-    async getProducts(userId?: string) {
-        let finalUserId = userId;
-        if (!finalUserId) {
-            const { data: { user: authUser } } = await supabase.auth.getUser();
-            if (!authUser) throw new Error('No user logged in');
-            finalUserId = authUser.id;
-        }
-
-        console.log('Fetching products...');
-        const { data, error } = await supabase
-            .from('products')
-            .select(`
-        *,
-        ingredients:product_ingredients(*)
-      `)
-            .eq('user_id', finalUserId)
-            .order('created_at', { ascending: false });
-
-        if (error) {
-            console.error('Error in getProducts:', error);
-            throw error;
-        }
-
-        const mapped = (data || []).map(p => ({
+    mapProduct(p: Record<string, unknown>): Product {
+        return {
             id: p.id,
             name: p.name || 'Sin nombre',
             category: p.category || 'gastronomia',
@@ -246,7 +224,33 @@ export const dataService = {
                 unit: i.unit || 'un',
                 cost: Number(i.cost) || 0
             }))
-        }));
+        } as Product;
+    },
+
+    async getProducts(userId?: string) {
+        let finalUserId = userId;
+        if (!finalUserId) {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) throw new Error('No user logged in');
+            finalUserId = authUser.id;
+        }
+
+        console.log('Fetching products...');
+        const { data, error } = await supabase
+            .from('products')
+            .select(`
+        *,
+        ingredients:product_ingredients(*)
+      `)
+            .eq('user_id', finalUserId)
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error in getProducts:', error);
+            throw error;
+        }
+
+        const mapped = (data || []).map(p => this.mapProduct(p));
         console.log('Products mapped:', mapped.length);
         return mapped;
     },
@@ -300,7 +304,22 @@ export const dataService = {
             if (ingError) throw ingError;
         }
 
-        return prodData[0];
+        // Fetch the created product with its ingredients to return a full Product object
+        const { data: fullProduct, error: fetchError } = await supabase
+            .from('products')
+            .select(`
+                *,
+                ingredients:product_ingredients(*)
+            `)
+            .eq('id', productId)
+            .single();
+
+        if (fetchError) {
+             console.error('Error fetching full product after creation:', fetchError);
+             return prodData[0]; // Fallback to raw data
+        }
+
+        return this.mapProduct(fullProduct);
     },
 
     async updateProduct(id: string, product: Partial<Product>, ingredients?: Record<string, unknown>[]) {

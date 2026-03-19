@@ -47,6 +47,38 @@ export default function Bolsillo() {
       setForm({ ...user });
     }
   }, [user]);
+  
+  const updateForm = (field: string, value: string | number) => {
+    setForm(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'monthlySalary' || field === 'monthlyWorkingHours') {
+        const salary = field === 'monthlySalary' ? (parseFloat(value) || 0) : prev.monthlySalary;
+        const hours = field === 'monthlyWorkingHours' ? (parseFloat(value) || 0) : prev.monthlyWorkingHours;
+        next.hourlyRate = hours > 0 ? (salary / hours) : 0;
+      }
+      return next;
+    });
+  };
+
+  const toggleExpenseInclusion = (id: string, checked: boolean) => {
+    const expense = expenses.find(e => e.id === id);
+    if (expense) {
+      updateExpense({ ...expense, includedInFixedCosts: checked });
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    try {
+      await updateProfile({
+        monthlySalary: form.monthlySalary,
+        monthlyWorkingHours: form.monthlyWorkingHours,
+        hourlyRate: form.hourlyRate
+      });
+      toast.success('Configuración guardada');
+    } catch (err) {
+      toast.error('Error al guardar configuración');
+    }
+  };
 
   const monthExpenses = useMemo(() =>
     expenses
