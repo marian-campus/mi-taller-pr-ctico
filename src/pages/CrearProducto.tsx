@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { useApp } from '@/context/AppContext';
 import { formatCurrency } from '@/lib/format';
@@ -82,6 +82,44 @@ export default function CrearProducto() {
   // Step 4
   const [labHours, setLabHours] = useState(existing?.labor?.hours || 0);
   const [labMinutes, setLabMinutes] = useState(existing?.labor?.minutes || 0);
+
+  // Sync ingredients costs when supplies are updated inline
+  useEffect(() => {
+    if (!supplies || supplies.length === 0) return;
+    setIngredients(prev => {
+      let changed = false;
+      const next = prev.map(item => {
+        const sup = supplies.find(s => s.id === item.supplyId);
+        if (sup) {
+          const factor = getNormalizationFactor(item.unit);
+          const newCost = Math.round(item.quantityUsed * factor * sup.pricePerUnit * 100) / 100;
+          if (newCost !== item.cost) {
+            changed = true;
+            return { ...item, cost: newCost };
+          }
+        }
+        return item;
+      });
+      return changed ? next : prev;
+    });
+
+    setPackaging(prev => {
+      let changed = false;
+      const next = prev.map(item => {
+        const sup = supplies.find(s => s.id === item.supplyId);
+        if (sup) {
+          const factor = getNormalizationFactor(item.unit);
+          const newCost = Math.round(item.quantityUsed * factor * sup.pricePerUnit * 100) / 100;
+          if (newCost !== item.cost) {
+            changed = true;
+            return { ...item, cost: newCost };
+          }
+        }
+        return item;
+      });
+      return changed ? next : prev;
+    });
+  }, [supplies]);
 
   // Inline Detail Editing (Price Paid & Quantity Bought)
   const [editingSupplyId, setEditingSupplyId] = useState<string | null>(null);
@@ -382,7 +420,6 @@ export default function CrearProducto() {
                             className="h-6 w-16 text-xs px-1"
                             value={tempPP}
                             onChange={e => setTempPP(e.target.value)}
-                            onBlur={() => handleSupplyDetailBlur(s)}
                             onKeyDown={e => handleDetailKeyDown(e, s)}
                             autoFocus
                           />
@@ -392,10 +429,15 @@ export default function CrearProducto() {
                             className="h-6 w-10 text-xs px-1"
                             value={tempQB}
                             onChange={e => setTempQB(e.target.value)}
-                            onBlur={() => handleSupplyDetailBlur(s)}
                             onKeyDown={e => handleDetailKeyDown(e, s)}
                           />
-                          <span className="text-xs text-muted-foreground">{s.unit}</span>
+                          <span className="text-xs text-muted-foreground mr-1">{s.unit}</span>
+                          <button onClick={() => handleSupplyDetailBlur(s)} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded" title="Guardar">
+                            <Check className="h-3.5 w-3.5" />
+                          </button>
+                          <button onClick={() => setEditingSupplyId(null)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Cancelar">
+                            <X className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       ) : (
                         <p
@@ -584,7 +626,6 @@ export default function CrearProducto() {
                                   className="h-6 w-16 text-xs px-1"
                                   value={tempPP}
                                   onChange={e => setTempPP(e.target.value)}
-                                  onBlur={() => handleSupplyDetailBlur(s)}
                                   onKeyDown={e => handleDetailKeyDown(e, s)}
                                   autoFocus
                                 />
@@ -594,10 +635,15 @@ export default function CrearProducto() {
                                   className="h-6 w-10 text-xs px-1"
                                   value={tempQB}
                                   onChange={e => setTempQB(e.target.value)}
-                                  onBlur={() => handleSupplyDetailBlur(s)}
                                   onKeyDown={e => handleDetailKeyDown(e, s)}
                                 />
-                                <span className="text-xs text-muted-foreground">{s.unit}</span>
+                                <span className="text-xs text-muted-foreground mr-1">{s.unit}</span>
+                                <button onClick={() => handleSupplyDetailBlur(s)} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded" title="Guardar">
+                                  <Check className="h-3.5 w-3.5" />
+                                </button>
+                                <button onClick={() => setEditingSupplyId(null)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Cancelar">
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
                               </div>
                             ) : (
                               <p
