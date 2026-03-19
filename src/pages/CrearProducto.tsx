@@ -58,7 +58,7 @@ export default function CrearProducto() {
   const [category, setCategory] = useState(existing?.category || 'gastronomia');
 
   // Step 2
-  const [ingredients, setIngredients] = useState<RecipeIngredient[]>(existing?.ingredients || []);
+  const [ingredients, setIngredients] = useState<(RecipeIngredient & { _rawQty?: string })[]>(existing?.ingredients || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [qtyInputs, setQtyInputs] = useState<Record<string, string>>({});
   const [selectedUnits, setSelectedUnits] = useState<Record<string, string>>({});
@@ -72,7 +72,7 @@ export default function CrearProducto() {
   const [newCat, setNewCat] = useState('gastronomia');
 
   // Step 3
-  const [packaging, setPackaging] = useState<(RecipeIngredient & { enabled?: boolean })[]>(existing?.packaging || []);
+  const [packaging, setPackaging] = useState<(RecipeIngredient & { enabled?: boolean, _rawQty?: string })[]>(existing?.packaging || []);
   const [usePackaging, setUsePackaging] = useState(existing ? (existing.packaging?.length > 0) : true);
   const [packSearch, setPackSearch] = useState('');
   const [packQty, setPackQty] = useState<Record<string, string>>({});
@@ -143,7 +143,8 @@ export default function CrearProducto() {
 
   const updateItemQty = (id: string, newQtyValue: string, target: 'ingredients' | 'packaging') => {
     console.log(`🔄 updateItemQty called for ${id} with value: ${newQtyValue}`);
-    const qty = parseFloat(newQtyValue) || 0;
+    const parsed = parseFloat(newQtyValue);
+    const qty = isNaN(parsed) ? 0 : parsed;
     const setter = target === 'ingredients' ? setIngredients : setPackaging;
 
     setter(prev => prev.map(item => {
@@ -155,14 +156,14 @@ export default function CrearProducto() {
         // If we don't have the supply info, we still update the quantity
         // The cost will temporarily be wrong or 0 until supplies load, 
         // but it prevents the input from being "blocked"
-        return { ...item, quantityUsed: qty };
+        return { ...item, quantityUsed: qty, _rawQty: newQtyValue };
       }
 
       const factor = getNormalizationFactor(item.unit);
       const cost = Math.round(qty * factor * supply.pricePerUnit * 100) / 100;
       
       console.log(`✅ Updated ${item.name}: Qty=${qty}, Cost=${cost}`);
-      return { ...item, quantityUsed: qty, cost };
+      return { ...item, quantityUsed: qty, _rawQty: newQtyValue, cost };
     }));
   };
 
@@ -484,7 +485,7 @@ export default function CrearProducto() {
                       <div className="flex items-center gap-1">
                         <Input
                           type="number"
-                          value={ing.quantityUsed}
+                          value={ing._rawQty !== undefined ? ing._rawQty : ing.quantityUsed}
                           onChange={e => updateItemQty(ing.id, e.target.value, 'ingredients')}
                           className="w-16 h-7 text-xs px-1 text-center"
                           step="any"
@@ -693,7 +694,7 @@ export default function CrearProducto() {
                           <div className="flex items-center gap-1 mx-2">
                             <Input
                               type="number"
-                              value={p.quantityUsed}
+                              value={p._rawQty !== undefined ? p._rawQty : p.quantityUsed}
                               onChange={e => updateItemQty(p.id, e.target.value, 'packaging')}
                               className="w-14 h-7 text-xs px-1 text-center"
                               step="any"
