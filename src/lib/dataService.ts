@@ -292,7 +292,6 @@ export const dataService = {
             const ingsWithId = ingredients.map(i => ({
                 product_id: productId,
                 supply_id: i.supplyId,
-                name: i.name,
                 quantity_used: i.quantityUsed,
                 unit: i.unit,
                 cost: i.cost,
@@ -360,7 +359,6 @@ export const dataService = {
                 const ingsWithId = ingredients.map(i => ({
                     product_id: id,
                     supply_id: i.supplyId,
-                    name: i.name,
                     quantity_used: i.quantityUsed,
                     unit: i.unit,
                     cost: i.cost,
