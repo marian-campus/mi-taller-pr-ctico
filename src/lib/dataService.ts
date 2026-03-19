@@ -115,14 +115,18 @@ export const dataService = {
     },
 
     // Supplies
-    async getSupplies() {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (!authUser) throw new Error('No user logged in');
+    async getSupplies(userId?: string) {
+        let finalUserId = userId;
+        if (!finalUserId) {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) throw new Error('No user logged in');
+            finalUserId = authUser.id;
+        }
 
         const { data, error } = await supabase
             .from('supplies')
             .select('*')
-            .eq('user_id', authUser.id)
+            .eq('user_id', finalUserId)
             .order('name');
         if (error) throw error;
         return (data || []).map(s => ({
@@ -189,9 +193,13 @@ export const dataService = {
     },
 
     // Products
-    async getProducts() {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (!authUser) throw new Error('No user logged in');
+    async getProducts(userId?: string) {
+        let finalUserId = userId;
+        if (!finalUserId) {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) throw new Error('No user logged in');
+            finalUserId = authUser.id;
+        }
 
         console.log('Fetching products...');
         const { data, error } = await supabase
@@ -200,7 +208,7 @@ export const dataService = {
         *,
         ingredients:product_ingredients(*)
       `)
-            .eq('user_id', authUser.id)
+            .eq('user_id', finalUserId)
             .order('created_at', { ascending: false });
 
         if (error) {
@@ -363,15 +371,19 @@ export const dataService = {
     },
 
     // Expenses
-    async getExpenses() {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (!authUser) throw new Error('No user logged in');
+    async getExpenses(userId?: string) {
+        let finalUserId = userId;
+        if (!finalUserId) {
+            const { data: { user: authUser } } = await supabase.auth.getUser();
+            if (!authUser) throw new Error('No user logged in');
+            finalUserId = authUser.id;
+        }
 
         console.log('Fetching expenses...');
         const { data, error } = await supabase
             .from('expenses')
             .select('*')
-            .eq('user_id', authUser.id)
+            .eq('user_id', finalUserId)
             .order('date', { ascending: false });
 
         if (error) {

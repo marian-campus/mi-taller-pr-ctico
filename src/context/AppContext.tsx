@@ -176,9 +176,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user_settings', JSON.stringify(profile));
         // ... rest of the sync
         const [supps, prods, exps] = await Promise.all([
-          fetchWithTimeout(dataService.getSupplies(), "supplies").catch(e => { console.error(e); return null; }),
-          fetchWithTimeout(dataService.getProducts(), "products").catch(e => { console.error(e); return null; }),
-          fetchWithTimeout(dataService.getExpenses(), "expenses").catch(e => { console.error(e); return null; })
+          fetchWithTimeout(dataService.getSupplies(userId), "supplies").catch(e => { console.error(e); return null; }),
+          fetchWithTimeout(dataService.getProducts(userId), "products").catch(e => { console.error(e); return null; }),
+          fetchWithTimeout(dataService.getExpenses(userId), "expenses").catch(e => { console.error(e); return null; })
         ]);
 
         if (supps) {

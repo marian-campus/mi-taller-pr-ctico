@@ -154,6 +154,7 @@ export default function CrearProducto() {
   };
 
   const updateItemQty = (id: string, newQtyValue: string, target: 'ingredients' | 'packaging') => {
+    console.log(`🔄 updateItemQty called for ${id} with value: ${newQtyValue}`);
     const qty = parseFloat(newQtyValue) || 0;
     const setter = target === 'ingredients' ? setIngredients : setPackaging;
 
@@ -161,11 +162,18 @@ export default function CrearProducto() {
       if (item.id !== id) return item;
       
       const supply = supplies.find(s => s.id === item.supplyId);
-      if (!supply) return item;
+      if (!supply) {
+        console.warn(`⚠️ Supply not found for ID: ${item.supplyId} in ${target}`);
+        // If we don't have the supply info, we still update the quantity
+        // The cost will temporarily be wrong or 0 until supplies load, 
+        // but it prevents the input from being "blocked"
+        return { ...item, quantityUsed: qty };
+      }
 
       const factor = getNormalizationFactor(item.unit);
       const cost = Math.round(qty * factor * supply.pricePerUnit * 100) / 100;
       
+      console.log(`✅ Updated ${item.name}: Qty=${qty}, Cost=${cost}`);
       return { ...item, quantityUsed: qty, cost };
     }));
   };
