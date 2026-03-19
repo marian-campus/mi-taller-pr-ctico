@@ -80,12 +80,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
             if (authUser) {
               await refreshUserData(authUser.id);
             } else {
-              // If no authUser, we should probably stop loading even if no local profile
               setLoading(false);
             }
           } catch (syncError) {
-            console.log("📡 Offline/Slow mode: Background sync postponed.");
-            setLoading(false); // Ensure UI is unlocked even if sync fails
+            console.log("📡 Offline/Slow mode or session check timeout. Postponing sync.");
+            setLoading(false);
           }
         } else {
           setLoading(false);
@@ -141,17 +140,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
       };
 
       console.log("🔍 Fetching profile...");
-      let profile = await fetchWithTimeout(dataService.getProfile(userId), "profile");
+      let profile = null;
+      try {
+        profile = await fetchWithTimeout(dataService.getProfile(userId), "profile");
+      } catch (err: any) {
+        // PGRST116 is the PostgREST error for "no rows returned" when using .single()
+        if (err?.code === 'PGRST116' || err?.message?.includes('JSON object requested, but 0 rows were returned')) {
+          console.warn("⚠️ Profile missing (PGRST116). Attempting self-healing...");
+        } else {
+          // If it's a real error (like timeout or network), we rethrow to be caught by the outer catch
+          throw err;
+        }
+      }
       
       // --- SELF-HEALING: Crear perfil si no existe ---
       if (!profile) {
-        console.warn("⚠️ Profile missing for authenticated user. Attempting self-healing...");
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (authUser) {
           try {
+            console.log("🛠️ Creating default profile for:", authUser.email);
             profile = await dataService.createProfile({
               id: authUser.id,
-              name: authUser.user_metadata?.first_name || 'Usuario',
+              name: authUser.user_metadata?.first_name || authUser.email?.split('@')[0] || 'Usuario',
               businessName: 'Mi Negocio',
               businessCategory: 'gastronomia',
               startDate: new Date().toISOString().split('T')[0],
@@ -163,9 +173,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
               currencySymbol: '$',
               language: 'es'
             });
-            console.log("✅ Profile healed successfully.");
+            console.log("✅ Profile created successfully.");
           } catch (healError) {
-            console.error("❌ Failed to heal profile:", healError);
+            console.error("❌ Failed to create profile:", healError);
           }
         }
       }
@@ -173,11 +183,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (profile) {
         setUserState(profile);
         localStorage.setItem('user_settings', JSON.stringify(profile));
-        // ... rest of the sync
+        
+        // Parallel fetch of other user data
         const [supps, prods, exps] = await Promise.all([
-          fetchWithTimeout(dataService.getSupplies(userId), "supplies").catch(e => { console.error(e); return null; }),
-          fetchWithTimeout(dataService.getProducts(userId), "products").catch(e => { console.error(e); return null; }),
-          fetchWithTimeout(dataService.getExpenses(userId), "expenses").catch(e => { console.error(e); return null; })
+          fetchWithTimeout(dataService.getSupplies(userId), "supplies").catch(e => { console.error("Error fetching supplies:", e); return null; }),
+          fetchWithTimeout(dataService.getProducts(userId), "products").catch(e => { console.error("Error fetching products:", e); return null; }),
+          fetchWithTimeout(dataService.getExpenses(userId), "expenses").catch(e => { console.error("Error fetching expenses:", e); return null; })
         ]);
 
         if (supps) {
@@ -194,12 +205,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
 
         console.log("☁️ END sync with cloud.");
-      } else {
-        // Si después de todo no hay perfil, al menos apagamos el loading si es necesario
-        setLoading(false);
       }
+      
+      // Always stop loading once we've tried everything
+      setLoading(false);
     } catch (err) {
-      console.error("❌ error in refreshUserData:", err);
+      console.error("❌ Critical error in refreshUserData:", err);
       setLoading(false);
     }
   }

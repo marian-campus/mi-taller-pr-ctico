@@ -5,22 +5,21 @@ export const dataService = {
     // Profiles
     // Perfiles con mapeo de snake_case a camelCase
     async getProfile(userId: string): Promise<UserSettings | null> {
-        console.log('Fetching profile for:', userId);
-        // Intentamos seleccionar columnas específicas primero para detectar errores de esquema
+        console.log('🔍 Fetching profile for:', userId);
         const { data, error } = await supabase
             .from('profiles')
-            .select('*') // Better to use * and Map manually or handle missing columns
+            .select('*')
             .eq('id', userId)
-            .maybeSingle();
+            .single();
 
         if (error) {
-            console.error('Error in getProfile:', error);
+            console.error('❌ Supabase error in getProfile:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
             throw error;
-        }
-
-        if (!data) {
-            console.warn('No profile found for user:', userId);
-            return null;
         }
 
         return this.mapProfile(data);
