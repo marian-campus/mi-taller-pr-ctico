@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 interface AppContextType {
   user: UserSettings | null;
   setUser: (u: UserSettings) => void;
+  updateProfile: (updates: Partial<UserSettings>) => Promise<void>;
   products: Product[];
   addProduct: (p: any, ingredients: any[]) => Promise<void>;
   updateProduct: (p: Product) => void;
@@ -206,6 +207,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const setUser = (u: UserSettings) => setUserState(u);
 
+  const updateProfile = async (updates: Partial<UserSettings>) => {
+    if (!user?.id) return;
+    try {
+      const newUser = { ...user, ...updates };
+      setUserState(newUser);
+      localStorage.setItem('user_settings', JSON.stringify(newUser));
+      await dataService.updateProfile(user.id, updates);
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      toast.error('Error al sincronizar perfil');
+    }
+  };
+
   const addProduct = async (p: any, ingredients: any[]) => {
     if (!user?.id) return;
     try {
@@ -387,7 +401,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      user, setUser,
+      user, setUser, updateProfile,
       products, addProduct, updateProduct, deleteProduct, toggleProductActive,
       expenses, addExpense, updateExpense, deleteExpense,
       supplies, addSupply, updateSupply, deleteSupply,

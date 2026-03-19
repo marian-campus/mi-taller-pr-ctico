@@ -18,11 +18,19 @@ export default function Perfil() {
 
   if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando perfil...</div></Layout>;
 
-  const { user, setUser } = context;
-  const { setTheme, theme } = themeContext || { setTheme: () => { }, theme: 'light' };
+  const { user, updateProfile } = context;
 
-  const update = (field: string, val: any) => {
-    setUser({ ...user, [field]: val });
+  const handleUpdateField = async (field: string, val: any) => {
+    await updateProfile({ [field]: val });
+  };
+
+  const handleUpdateLabor = async (salary: number, hours: number) => {
+    const rate = hours > 0 ? salary / hours : 0;
+    await updateProfile({
+      monthlySalary: salary,
+      monthlyWorkingHours: hours,
+      hourlyRate: rate
+    });
   };
 
   const countries = ['Argentina', 'Chile', 'Uruguay', 'México', 'Colombia', 'España', 'Otro'];
@@ -54,7 +62,7 @@ export default function Perfil() {
               <Label className="text-xs font-bold text-muted-foreground uppercase">Nombre del Negocio</Label>
               <Input
                 value={user.businessName}
-                onChange={e => update('businessName', e.target.value)}
+                onChange={e => handleUpdateField('businessName', e.target.value)}
                 placeholder="Ej: Dulces de Maru"
                 className="rounded-xl h-11"
               />
@@ -63,7 +71,7 @@ export default function Perfil() {
               <Label className="text-xs font-bold text-muted-foreground uppercase">Tu Nombre</Label>
               <Input
                 value={user.name}
-                onChange={e => update('name', e.target.value)}
+                onChange={e => handleUpdateField('name', e.target.value)}
                 placeholder="Tu nombre"
                 className="rounded-xl h-11"
               />
@@ -72,10 +80,58 @@ export default function Perfil() {
               <Label className="text-xs font-bold text-muted-foreground uppercase">Ubicación / Ciudad</Label>
               <Input
                 value={user.location}
-                onChange={e => update('location', e.target.value)}
+                onChange={e => handleUpdateField('location', e.target.value)}
                 placeholder="Ej: Ciudad de Buenos Aires"
                 className="rounded-xl h-11"
               />
+            </div>
+          </div>
+        </Card>
+
+        {/* Labor Calculation Settings */}
+        <Card className="p-6 rounded-3xl border-primary/10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+              <Calculator className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-foreground leading-tight">Mano de Obra</h3>
+              <p className="text-xs text-muted-foreground">Configurá cuánto vale tu tiempo</p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-muted-foreground uppercase">Sueldo Mensual Deseado</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-3 text-muted-foreground">{user.currencySymbol}</span>
+                <Input
+                  type="number"
+                  value={user.monthlySalary || ''}
+                  onChange={e => handleUpdateLabor(parseFloat(e.target.value) || 0, user.monthlyWorkingHours)}
+                  placeholder="0.00"
+                  className="rounded-xl h-11 pl-8"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-bold text-muted-foreground uppercase">Horas de Trabajo al Mes</Label>
+              <Input
+                type="number"
+                value={user.monthlyWorkingHours || ''}
+                onChange={e => handleUpdateLabor(user.monthlySalary, parseFloat(e.target.value) || 0)}
+                placeholder="Ej: 160"
+                className="rounded-xl h-11"
+              />
+            </div>
+            
+            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 mt-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-muted-foreground">Tu Valor Hora:</span>
+                <span className="text-xl font-black text-primary">
+                  {user.currencySymbol}{user.hourlyRate.toFixed(2)}
+                </span>
+              </div>
             </div>
           </div>
         </Card>
@@ -111,7 +167,7 @@ export default function Perfil() {
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">País / Región</Label>
               <select
                 value={user.country}
-                onChange={e => update('country', e.target.value)}
+                onChange={e => handleUpdateField('country', e.target.value)}
                 className="w-full h-10 mt-1 rounded-xl border-none bg-muted px-3 text-sm font-semibold focus:ring-2 focus:ring-primary"
               >
                 {countries.map(c => <option key={c} value={c}>{c}</option>)}
@@ -122,7 +178,7 @@ export default function Perfil() {
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Idioma</Label>
               <select
                 value={user.language}
-                onChange={e => update('language', e.target.value)}
+                onChange={e => handleUpdateField('language', e.target.value)}
                 className="w-full h-10 mt-1 rounded-xl border-none bg-muted px-3 text-sm font-semibold focus:ring-2 focus:ring-primary"
               >
                 <option value="es-AR">Español (Argentina)</option>
@@ -143,7 +199,7 @@ export default function Perfil() {
                 ].map(curr => (
                   <button
                     key={curr.code}
-                    onClick={() => update('currencySymbol', curr.code)}
+                    onClick={() => handleUpdateField('currencySymbol', curr.code)}
                     className={cn(
                       "flex-1 py-3 rounded-xl text-xs font-bold transition-all border-2",
                       user.currencySymbol === curr.code ? "bg-primary border-primary text-white" : "bg-muted border-transparent text-muted-foreground"

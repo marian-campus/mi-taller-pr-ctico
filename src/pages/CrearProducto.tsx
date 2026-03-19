@@ -153,6 +153,23 @@ export default function CrearProducto() {
     }
   };
 
+  const updateItemQty = (id: string, newQtyValue: string, target: 'ingredients' | 'packaging') => {
+    const qty = parseFloat(newQtyValue) || 0;
+    const setter = target === 'ingredients' ? setIngredients : setPackaging;
+
+    setter(prev => prev.map(item => {
+      if (item.id !== id) return item;
+      
+      const supply = supplies.find(s => s.id === item.supplyId);
+      if (!supply) return item;
+
+      const factor = getNormalizationFactor(item.unit);
+      const cost = Math.round(qty * factor * supply.pricePerUnit * 100) / 100;
+      
+      return { ...item, quantityUsed: qty, cost };
+    }));
+  };
+
   const handleDeleteSupply = (supplyId: string) => {
     const isInUse = products.some(p =>
       p.ingredients.some(i => i.supplyId === supplyId) ||
@@ -247,43 +264,47 @@ export default function CrearProducto() {
       const productData = {
         name,
         category,
-        labor_hours: labHours,
-        labor_minutes: labMinutes,
-        labor_cost: Math.round(labCost),
-        include_fixed_costs: includeFixed,
-        fixed_cost_per_unit: fixedPU,
-        total_cost: totalCost,
+        labor: {
+          hours: labHours,
+          minutes: labMinutes,
+          cost: Math.round(labCost)
+        },
+        includeFixedCosts: includeFixed,
+        fixedCostPerUnit: fixedPU,
+        totalCost: totalCost,
         active: existing?.active ?? true,
       };
 
       const allIngredients = [
         ...ingredients.map(i => ({
-          supply_id: i.supplyId,
+          supplyId: i.supplyId,
           name: i.name,
-          quantity_used: i.quantityUsed,
+          quantityUsed: i.quantityUsed,
           unit: i.unit,
           cost: i.cost,
-          is_packaging: false
+          isPackaging: false
         })),
         ...packaging.filter(p => p.enabled !== false).map(p => ({
-          supply_id: p.supplyId,
+          supplyId: p.supplyId,
           name: p.name,
-          quantity_used: p.quantityUsed,
+          quantityUsed: p.quantityUsed,
           unit: p.unit,
           cost: p.cost,
-          is_packaging: true
+          isPackaging: true
         }))
       ];
 
-      if (existing) {
-        // updateProduct(product); // TODO: implement update logic
+      if (id && existing) {
+        await updateProduct({ ...existing, ...productData } as Product, allIngredients);
+        toast.success('🎯 ¡Producto actualizado!');
       } else {
         await addProduct(productData, allIngredients);
+        toast.success('🎯 ¡Producto guardado!');
       }
-      toast.success('🎯 ¡Producto guardado!');
       navigate('/recetario');
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("❌ Error saving product:", err);
+      toast.error('Error al guardar: ' + (err.message || 'Error desconocido'));
     }
   };
 
@@ -439,8 +460,17 @@ export default function CrearProducto() {
                   {ingredients.map(ing => (
                     <div key={ing.id} className="flex items-center gap-2 py-1.5 border-b border-border last:border-0">
                       <span className="text-sm flex-1 truncate">{ing.name}</span>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">{ing.quantityUsed} {ing.unit}</span>
-                      <span className="text-sm font-medium whitespace-nowrap">{formatCurrency(ing.cost, user.currencySymbol)}</span>
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          value={ing.quantityUsed || ''}
+                          onChange={e => updateItemQty(ing.id, e.target.value, 'ingredients')}
+                          className="w-16 h-7 text-xs px-1 text-center"
+                          step="any"
+                        />
+                        <span className="text-[10px] text-muted-foreground">{ing.unit}</span>
+                      </div>
+                      <span className="text-sm font-medium whitespace-nowrap w-20 text-right">{formatCurrency(ing.cost, user.currencySymbol)}</span>
                       <button onClick={() => setIngredients(prev => prev.filter(i => i.id !== ing.id))} className="text-destructive shrink-0">
                         <X className="h-4 w-4" />
                       </button>
@@ -637,9 +667,19 @@ export default function CrearProducto() {
                                 {p.enabled !== false ? 'ON' : 'OFF'}
                               </span>
                             </div>
-                            <span className="truncate">{p.name} ({p.quantityUsed} {p.unit})</span>
+                            <span className="truncate">{p.name}</span>
                           </div>
-                          <span className="font-medium mx-2 shrink-0">{formatCurrency(p.cost)}</span>
+                          <div className="flex items-center gap-1 mx-2">
+                            <Input
+                              type="number"
+                              value={p.quantityUsed || ''}
+                              onChange={e => updateItemQty(p.id, e.target.value, 'packaging')}
+                              className="w-14 h-7 text-xs px-1 text-center"
+                              step="any"
+                            />
+                            <span className="text-[10px] text-muted-foreground">{p.unit}</span>
+                          </div>
+                          <span className="font-medium mx-2 shrink-0 w-16 text-right">{formatCurrency(p.cost)}</span>
                           <button onClick={() => setPackaging(prev => prev.filter(i => i.id !== p.id))} className="text-destructive shrink-0 p-1">
                             <X className="h-4 w-4" />
                           </button>

@@ -325,7 +325,10 @@ export const dataService = {
                 .delete()
                 .eq('product_id', id);
 
-            if (delError) throw delError;
+             if (delError) {
+                 console.error('❌ Supabase error deleting ingredients for update:', delError.message, delError.code);
+                 throw delError;
+             }
 
             if (ingredients.length > 0) {
                 const ingsWithId = ingredients.map(i => ({
@@ -340,7 +343,10 @@ export const dataService = {
                 const { error: ingError } = await supabase
                     .from('product_ingredients')
                     .insert(ingsWithId);
-                if (ingError) throw ingError;
+                if (ingError) {
+                 console.error('❌ Supabase error inserting product ingredients:', ingError.message, ingError.details, ingError.hint, ingError.code);
+                 throw ingError;
+             }
             }
         }
     },
