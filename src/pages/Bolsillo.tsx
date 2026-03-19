@@ -25,7 +25,7 @@ const categoryLabels: Record<string, string> = {
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 export default function Bolsillo() {
-  const { expenses, updateExpense, deleteExpense, user, setUser } = useApp();
+  const { expenses, updateExpense, deleteExpense, user, setUser, updateProfile } = useApp();
   const navigate = useNavigate();
 
   const now = new Date();
@@ -70,9 +70,9 @@ export default function Bolsillo() {
   const handleSaveConfig = async () => {
     try {
       await updateProfile({
-        monthlySalary: form.monthlySalary,
-        monthlyWorkingHours: form.monthlyWorkingHours,
-        hourlyRate: form.hourlyRate
+        monthlySalary: Number(form.monthlySalary),
+        monthlyWorkingHours: Number(form.monthlyWorkingHours),
+        hourlyRate: Number(form.hourlyRate)
       });
       toast.success('Configuración guardada');
     } catch (err) {
