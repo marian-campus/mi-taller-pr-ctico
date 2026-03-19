@@ -12,13 +12,11 @@ import { cn } from "@/lib/utils";
 import { supabase } from '@/lib/supabase';
 
 export default function Perfil() {
-  const context = useApp();
-  const themeContext = useTheme();
+  const { user, updateProfile } = useApp();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
-  if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando perfil...</div></Layout>;
-
-  const { user, updateProfile } = context;
+  if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando perfil...</div></Layout>;
 
   const handleUpdateField = async (field: string, val: any) => {
     await updateProfile({ [field]: val });

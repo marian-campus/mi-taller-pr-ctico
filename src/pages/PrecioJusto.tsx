@@ -14,12 +14,13 @@ import { cn } from '@/lib/utils';
 
 export default function PrecioJusto() {
   const { products = [], updateProduct, user } = useApp();
-
-  if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando datos...</div></Layout>;
+  const navigate = useNavigate();
 
   const [selectedId, setSelectedId] = useState(products[0]?.id || '');
   const [margin, setMargin] = useState([70]);
-  const navigate = useNavigate();
+  const [comp1, setComp1] = useState('');
+  const [comp2, setComp2] = useState('');
+  const [comp3, setComp3] = useState('');
 
   // Handle selectedId when products load
   useEffect(() => {
@@ -28,9 +29,7 @@ export default function PrecioJusto() {
     }
   }, [products]);
 
-  const [comp1, setComp1] = useState('');
-  const [comp2, setComp2] = useState('');
-  const [comp3, setComp3] = useState('');
+  if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando datos...</div></Layout>;
 
   const product = products.find(p => p.id === selectedId);
   const cost = product?.totalCost || 0;

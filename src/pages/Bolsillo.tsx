@@ -28,18 +28,24 @@ export default function Bolsillo() {
   const { expenses, updateExpense, deleteExpense, user, setUser } = useApp();
   const navigate = useNavigate();
 
-  if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando datos del negocio...</div></Layout>;
-
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year, setYear] = useState(now.getFullYear());
 
   // Form state for Section A
-  const [form, setForm] = useState({ ...user });
+  const [form, setForm] = useState({ 
+    monthlySalary: user?.monthlySalary || 0,
+    monthlyWorkingHours: user?.monthlyWorkingHours || 0,
+    hourlyRate: user?.hourlyRate || 0,
+    currencySymbol: user?.currencySymbol || '$',
+    ...user 
+  });
 
   // Update local form when user settings change
   useEffect(() => {
-    setForm({ ...user });
+    if (user) {
+      setForm({ ...user });
+    }
   }, [user]);
 
   const monthExpenses = useMemo(() =>
@@ -59,36 +65,16 @@ export default function Bolsillo() {
   }, [monthExpenses]);
 
   const hourlyFixedCostRate = useMemo(() => {
-    return form.monthlyWorkingHours > 0 ? (includedExpensesTotal / form.monthlyWorkingHours) : 0;
+    return (form.monthlyWorkingHours || 0) > 0 ? (includedExpensesTotal / (form.monthlyWorkingHours || 0)) : 0;
   }, [includedExpensesTotal, form.monthlyWorkingHours]);
-
-  const updateForm = (field: string, val: any) => {
-    const updated = { ...form, [field]: val };
-    if (field === 'monthlySalary' || field === 'monthlyWorkingHours') {
-      const salary = field === 'monthlySalary' ? Number(val) : form.monthlySalary;
-      const hours = field === 'monthlyWorkingHours' ? Number(val) : form.monthlyWorkingHours;
-      updated.hourlyRate = hours > 0 ? Math.round(salary / hours) : 0;
-    }
-    setForm(updated);
-  };
-
-  const toggleExpenseInclusion = (expenseId: string, included: boolean) => {
-    const expense = expenses.find(e => e.id === expenseId);
-    if (expense) {
-      updateExpense({ ...expense, includedInFixedCosts: included });
-    }
-  };
-
-  const handleSaveConfig = () => {
-    setUser(form);
-    toast.success('Configuración de costos guardada');
-  };
 
   const chartData = useMemo(() => {
     const byCategory: Record<string, number> = {};
     monthExpenses.forEach(e => { byCategory[e.category] = (byCategory[e.category] || 0) + e.amount; });
     return Object.entries(byCategory).map(([cat, amount]) => ({ name: categoryLabels[cat] || cat, value: amount }));
   }, [monthExpenses]);
+
+  if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando datos del negocio...</div></Layout>;
 
   return (
     <Layout title="💰 Mi Negocio">
