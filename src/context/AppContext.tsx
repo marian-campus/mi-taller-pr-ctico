@@ -111,8 +111,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           await refreshUserData(session.user.id);
         } catch (err) {
           console.error("❌ Failed to refresh user data:", err);
-        } finally {
-          setLoading(false);
+          setLoading(false); // Ensure loading is off even if error occurs
         }
       } else if (event === 'SIGNED_OUT') {
         console.log("👋 Clearing state...");
@@ -137,7 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const fetchWithTimeout = async (promise: Promise<any>, name: string) => {
         return Promise.race([
           promise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout fetching ${name}`)), 8000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout fetching ${name}`)), 30000))
         ]);
       };
 

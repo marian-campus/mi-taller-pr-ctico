@@ -64,6 +64,17 @@ export default function CrearProducto() {
     );
   }
 
+  if (!user) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground animate-pulse">Cargando tus datos...</p>
+        </div>
+      </Layout>
+    );
+  }
+
   const [step, setStep] = useState(isViewMode ? 5 : 1);
 
   // Step 1
@@ -107,7 +118,7 @@ export default function CrearProducto() {
 
   // Labor
   const laborTimeHrs = labHours + labMinutes / 60;
-  const labCost = laborTimeHrs * user.hourlyRate;
+  const labCost = laborTimeHrs * (user?.hourlyRate || 0);
 
   // Fixed Proportional Cost
   const hourlyFixedRate = user.monthlyWorkingHours > 0 ? totalExpenses / user.monthlyWorkingHours : 0;
@@ -732,7 +743,7 @@ export default function CrearProducto() {
 
             <Card className="p-4">
               <p className="text-sm text-muted-foreground">Tu valor/hora: <span className="font-bold text-foreground">{formatCurrency(user.hourlyRate, user.currencySymbol)}</span></p>
-              <p className="text-xl font-bold text-primary mt-1">Costo de tu trabajo: {formatCurrency(labCost, user.currencySymbol)}</p>
+              <p className="text-xl font-bold text-primary mt-1">Costo de tu trabajo: {formatCurrency(labCost, user?.currencySymbol || '$')}</p>
             </Card>
 
             <div className="flex gap-3">
@@ -793,7 +804,7 @@ export default function CrearProducto() {
                       <span className="text-[10px] text-muted-foreground uppercase">{labHours}h {labMinutes}min dedicados</span>
                     </div>
                   </div>
-                  <span className="font-bold">{formatCurrency(labCost, user.currencySymbol)}</span>
+                  <span className="font-bold">{formatCurrency(labCost, user?.currencySymbol || '$')}</span>
                 </div>
 
                 {includeFixed && (
