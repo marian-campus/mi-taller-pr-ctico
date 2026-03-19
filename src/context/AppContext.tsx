@@ -10,7 +10,7 @@ interface AppContextType {
   updateProfile: (updates: Partial<UserSettings>) => Promise<void>;
   products: Product[];
   addProduct: (p: any, ingredients: any[]) => Promise<void>;
-  updateProduct: (p: Product) => void;
+  updateProduct: (p: Product, ingredients?: any[]) => Promise<void>;
   deleteProduct: (id: string) => void;
   toggleProductActive: (id: string) => void;
   expenses: Expense[];

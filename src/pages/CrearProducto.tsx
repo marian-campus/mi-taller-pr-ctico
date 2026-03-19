@@ -122,7 +122,8 @@ export default function CrearProducto() {
   const labCost = laborTimeHrs * (user?.hourlyRate || 0);
 
   // Fixed Proportional Cost
-  const hourlyFixedRate = user.monthlyWorkingHours > 0 ? totalExpenses / user.monthlyWorkingHours : 0;
+  const userHours = user?.monthlyWorkingHours || 0;
+  const hourlyFixedRate = userHours > 0 ? totalExpenses / userHours : 0;
   const fixedPU = includeFixed ? Math.round(hourlyFixedRate * laborTimeHrs) : 0;
 
   const totalCost = Math.round(ingCost + packCost + labCost + fixedPU);
