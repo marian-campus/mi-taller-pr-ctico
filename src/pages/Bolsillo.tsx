@@ -308,7 +308,6 @@ export default function Bolsillo() {
               <Save className="h-6 w-6" /> Guardar Configuración de Costos
             </Button>
           </div>
-        </div>
 
         <Button onClick={() => navigate('/bolsillo/nuevo')} className="fixed bottom-20 right-4 md:bottom-8 md:right-8 h-14 w-14 rounded-full shadow-lg z-40 hover:scale-105 active:scale-95 transition-transform" size="icon">
           <Plus className="h-6 w-6" />
