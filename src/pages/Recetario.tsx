@@ -25,7 +25,7 @@ export default function Recetario() {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {products.map(p => (
               <ProductCard key={p.id} product={p} variant="highlighted" />
             ))}
@@ -36,7 +36,7 @@ export default function Recetario() {
         {/* FAB */}
         <Button
           onClick={() => navigate('/recetario/nuevo')}
-          className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-2xl z-40 bg-primary text-primary-foreground hover:scale-105 active:scale-95 transition-transform"
+          className="fixed bottom-20 right-4 md:bottom-8 md:right-8 h-14 w-14 rounded-full shadow-2xl z-40 bg-primary text-primary-foreground hover:scale-105 active:scale-95 transition-transform"
           size="icon"
         >
           <Plus className="h-7 w-7" />

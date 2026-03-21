@@ -372,7 +372,7 @@ export default function CrearProducto() {
 
   return (
     <Layout title={existing ? 'Editar Producto' : '📝 Nuevo Producto'}>
-      <div className="max-w-lg mx-auto space-y-4">
+      <div className="max-w-lg md:max-w-2xl mx-auto space-y-4">
         {step <= 4 && <StepIndicator current={step} total={4} />}
 
         {/* STEP 1: Basic Info */}

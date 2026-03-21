@@ -159,30 +159,34 @@ export default function Bolsillo() {
               <p className="text-muted-foreground">No hay gastos registrados este mes.</p>
             </Card>
           ) : (
-            monthExpenses.map(e => (
-              <Card key={e.id} className="p-3 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <CategoryIcon category={e.category} className="text-xl" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{e.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(e.date + 'T12:00:00').toLocaleDateString('es-AR')}
-                      {e.recurring && <span className="ml-2 bg-cta/20 text-cta px-1.5 py-0.5 rounded-full text-[10px] font-medium">Recurrente</span>}
-                    </p>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {monthExpenses.map(e => (
+                <Card key={e.id} className="p-3 rounded-xl flex flex-col justify-between">
+                  <div className="flex items-center gap-3">
+                    <CategoryIcon category={e.category} className="text-xl" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{e.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(e.date + 'T12:00:00').toLocaleDateString('es-AR')}
+                        {e.recurring && <span className="ml-2 bg-cta/20 text-cta px-1.5 py-0.5 rounded-full text-[10px] font-medium">Recurrente</span>}
+                      </p>
+                    </div>
                   </div>
-                  <p className="font-bold text-sm whitespace-nowrap">{formatCurrency(e.amount, user?.currencySymbol)}</p>
-                  <div className="flex gap-1 shrink-0">
-                    <button onClick={() => navigate(`/bolsillo/${e.id}`)} className="p-1.5 text-muted-foreground hover:text-primary rounded transition-colors">
-                      <Pencil className="h-3.5 w-3.5" />
-                    </button>
-                    <button onClick={() => { if (confirm('¿Eliminar este gasto?')) deleteExpense(e.id); }}
-                      className="p-1.5 text-muted-foreground hover:text-destructive rounded transition-colors">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
+                    <p className="font-bold text-lg whitespace-nowrap">{formatCurrency(e.amount, user?.currencySymbol)}</p>
+                    <div className="flex gap-1 shrink-0">
+                      <button onClick={() => navigate(`/bolsillo/${e.id}`)} className="p-1.5 text-muted-foreground hover:text-primary rounded transition-colors bg-muted/50">
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => { if (confirm('¿Eliminar este gasto?')) deleteExpense(e.id); }}
+                        className="p-1.5 text-muted-foreground hover:text-destructive rounded transition-colors bg-destructive/10">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            ))
+                </Card>
+              ))}
+            </div>
           )}
         </div>
 
@@ -193,9 +197,9 @@ export default function Bolsillo() {
             Ajustá cómo estos gastos y tu tiempo impactan en el precio de tus productos.
           </p>
 
-          <div className="space-y-6">
+          <div className="space-y-6 md:grid md:grid-cols-2 md:gap-6 md:space-y-0 md:items-start">
             {/* SECCIÓN A: Mano de Obra */}
-            <Card className="p-4 space-y-4 rounded-xl border-primary/20 border-2 shadow-md">
+            <Card className="p-4 space-y-4 rounded-xl border-primary/20 border-2 shadow-md flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">⏱️</span>
                 <h3 className="font-bold text-lg">SECCIÓN A: Mano de Obra</h3>
@@ -229,7 +233,7 @@ export default function Bolsillo() {
                   </div>
                   <div>
                     <Label className="text-xs font-bold uppercase text-muted-foreground">Valor hora (calc.)</Label>
-                    <div className="h-12 mt-1 flex items-center px-4 rounded-md border border-input bg-primary/5 text-lg font-black text-primary">
+                    <div className="h-12 mt-1 flex items-center px-4 rounded-md border border-input bg-primary/5 text-lg font-black text-primary truncate">
                       {formatCurrency(form.hourlyRate, form.currencySymbol)}/h
                     </div>
                   </div>
@@ -238,7 +242,7 @@ export default function Bolsillo() {
             </Card>
 
             {/* SECCIÓN B: Costos Fijos */}
-            <Card className="p-4 space-y-4 rounded-xl bg-accent/30 border-accent border-2 shadow-md">
+            <Card className="p-4 space-y-4 rounded-xl bg-accent/30 border-accent border-2 shadow-md flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🏠</span>
                 <h3 className="font-bold text-lg">SECCIÓN B: Costos Fijos</h3>
@@ -280,17 +284,17 @@ export default function Bolsillo() {
 
               <div className="space-y-4 pt-4 border-t border-accent">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-muted-foreground uppercase">Total Gastos Activados:</span>
-                  <span className="font-black text-xl text-foreground">{formatCurrency(includedExpensesTotal, form.currencySymbol)}</span>
+                  <span className="text-sm font-medium text-muted-foreground uppercase">Total Activados:</span>
+                  <span className="font-black text-xl text-foreground text-right">{formatCurrency(includedExpensesTotal, form.currencySymbol)}</span>
                 </div>
 
                 <div className="p-4 bg-primary/10 rounded-xl flex justify-between items-center border border-primary/20">
-                  <div>
-                    <p className="text-xs font-bold text-primary uppercase leading-tight">Tasa Costo Fijo / Hora</p>
+                  <div className="flex-1 mr-2">
+                    <p className="text-xs font-bold text-primary uppercase leading-tight">Costo Fijo / Hora</p>
                     <p className="text-[10px] text-muted-foreground">Total / {form.monthlyWorkingHours}hs</p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-black text-primary">
+                  <div className="text-right shrink-0">
+                    <span className="text-xl font-black text-primary">
                       {formatCurrency(hourlyFixedCostRate, form.currencySymbol)}
                     </span>
                     <span className="text-xs font-bold text-primary ml-1">/h</span>
@@ -298,14 +302,15 @@ export default function Bolsillo() {
                 </div>
               </div>
             </Card>
+          </div>
 
-            <Button onClick={handleSaveConfig} className="w-full h-16 text-lg font-black shadow-xl shadow-primary/20 gap-2 mb-8">
+          <Button onClick={handleSaveConfig} className="w-full h-16 text-lg font-black shadow-xl shadow-primary/20 gap-2 mt-6">
               <Save className="h-6 w-6" /> Guardar Configuración de Costos
             </Button>
           </div>
         </div>
 
-        <Button onClick={() => navigate('/bolsillo/nuevo')} className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-40" size="icon">
+        <Button onClick={() => navigate('/bolsillo/nuevo')} className="fixed bottom-20 right-4 md:bottom-8 md:right-8 h-14 w-14 rounded-full shadow-lg z-40 hover:scale-105 active:scale-95 transition-transform" size="icon">
           <Plus className="h-6 w-6" />
         </Button>
       </div>

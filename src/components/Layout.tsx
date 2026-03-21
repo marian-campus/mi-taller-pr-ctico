@@ -34,18 +34,69 @@ export default function Layout({ children, title }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <header className="sticky top-0 z-40 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 md:pl-64">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 bg-card border-r border-border z-30">
+        <div className="flex items-center gap-2 px-6 py-4 border-b border-border/50 shrink-0">
+          <span className="font-bold text-lg text-primary tracking-tight">Mi Taller Contable</span>
+        </div>
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1 min-h-0 bg-card/50">
+          <Link to="/dashboard" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+            <Home className="h-5 w-5" /> Inicio
+          </Link>
+          <Link to="/bolsillo" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+            <Wallet className="h-5 w-5" /> Mi Negocio (Gastos)
+          </Link>
+          <Link to="/recetario" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+            <BookOpen className="h-5 w-5" /> Mis Costos (Recetario)
+          </Link>
+          <Link to="/precio-justo" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+            <DollarSign className="h-5 w-5" /> El Precio Justo
+          </Link>
+          <Link to="/simulador" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3 text-cta font-bold">
+            <BarChart3 className="h-5 w-5" /> Simulador Mix de Ventas
+          </Link>
+          <div className="h-px bg-border my-2" />
+          <Link to="/perfil" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
+            <User className="h-5 w-5" /> Mi Perfil
+          </Link>
+        </nav>
+        <div className="p-4 pt-4 shrink-0 border-t border-border bg-card">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="w-full px-4 py-3 rounded-xl bg-destructive/5 text-destructive border border-destructive/10 hover:bg-destructive hover:text-white font-bold flex items-center justify-center gap-3 transition-all group">
+                <LogOut className="h-5 w-5 transform group-hover:-translate-x-1 transition-transform" /> Cerrar Sesión
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro de que quieres salir?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Se cerrará tu sesión actual y deberás volver a ingresar para acceder a tus datos.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Cerrar Sesión
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </aside>
+
+      <header className="sticky top-0 z-20 bg-card/95 backdrop-blur border-b border-border px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="h-9 w-9"
+            className="h-9 w-9 md:hidden"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <span className="font-bold text-lg text-primary tracking-tight">Mi Taller Contable</span>
+          <span className="font-bold text-lg text-primary tracking-tight md:hidden">Mi Taller Contable</span>
         </div>
         <div className="flex items-center gap-2">
           {title && (
@@ -116,7 +167,7 @@ export default function Layout({ children, title }: LayoutProps) {
         </div>
       )}
 
-      <main className="px-4 py-4 max-w-2xl mx-auto">{children}</main>
+      <main className="px-4 py-6 md:px-8 max-w-2xl md:max-w-5xl lg:max-w-6xl mx-auto w-full">{children}</main>
       <BottomNav />
     </div>
   );

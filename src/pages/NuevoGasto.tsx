@@ -64,7 +64,7 @@ export default function NuevoGasto() {
 
   return (
     <Layout title={existing ? '✏️ Editar Gasto' : '+ Nuevo Gasto'}>
-      <div className="space-y-4 max-w-lg mx-auto">
+      <div className="space-y-4 max-w-lg md:max-w-xl mx-auto">
         <div>
           <Label>¿Qué gastaste?</Label>
           <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Ej: Nafta para comprar ingredientes" className="mt-1" />

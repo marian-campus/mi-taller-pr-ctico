@@ -108,10 +108,12 @@ export default function Dashboard() {
               <Button onClick={() => navigate('/recetario/nuevo')}>+ Nuevo Producto</Button>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {products.filter(p => p.active !== false).slice(-3).reverse().map(p => (
-                <ProductCard key={p.id} product={p} variant="simple" />
-              ))}
+            <div className="space-y-4">
+              <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
+                {products.filter(p => p.active !== false).slice(-3).reverse().map(p => (
+                  <ProductCard key={p.id} product={p} variant="simple" />
+                ))}
+              </div>
               {products.length > 0 && (
                 <Button variant="ghost" onClick={() => navigate('/recetario')} className="w-full text-primary">
                   {products.length > 3 ? `Ver los ${products.length} productos →` : 'Ver todos los productos →'}
