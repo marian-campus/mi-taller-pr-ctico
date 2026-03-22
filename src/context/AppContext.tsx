@@ -39,6 +39,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [supplies, setSupplies] = useState<Supply[]>([]);
   const [projection, setProjection] = useState<Record<string, { enabled: boolean; qty: string }>>({});
   const [loading, setLoading] = useState(true);
+  const isSyncing = React.useRef(false);
 
   // 1. Initial Data Fetch (Local-First & Silent Sync)
   useEffect(() => {
@@ -129,32 +130,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function refreshUserData(userId: string) {
+    if (isSyncing.current) {
+      console.log("⏳ Sync already in progress, skipping duplicate call...");
+      return;
+    }
+    isSyncing.current = true;
+
     try {
       console.log("☁️ START sync with cloud for:", userId);
 
       const fetchWithTimeout = async (promise: Promise<any>, name: string) => {
         return Promise.race([
           promise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout fetching ${name}`)), 30000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout fetching ${name}`)), 15000))
         ]);
       };
 
       console.log("🔍 Fetching profile...");
       let profile = null;
+      let isProfileMissing = false;
+
       try {
         profile = await fetchWithTimeout(dataService.getProfile(userId), "profile");
       } catch (err: any) {
-        // PGRST116 is the PostgREST error for "no rows returned" when using .single()
         if (err?.code === 'PGRST116' || err?.message?.includes('JSON object requested, but 0 rows were returned')) {
           console.warn("⚠️ Profile missing (PGRST116). Attempting self-healing...");
+          isProfileMissing = true;
         } else {
-          // If it's a real error (like timeout or network), we rethrow to be caught by the outer catch
-          throw err;
+          console.error("❌ Error fetching profile:", err.message || err);
         }
       }
       
       // --- SELF-HEALING: Crear perfil si no existe ---
-      if (!profile) {
+      if (isProfileMissing && !profile) {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (authUser) {
           try {
@@ -183,35 +191,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (profile) {
         setUserState(profile);
         localStorage.setItem('user_settings', JSON.stringify(profile));
-        
-        // Parallel fetch of other user data
-        const [supps, prods, exps] = await Promise.all([
-          fetchWithTimeout(dataService.getSupplies(userId), "supplies").catch(e => { console.error("Error fetching supplies:", e); return null; }),
-          fetchWithTimeout(dataService.getProducts(userId), "products").catch(e => { console.error("Error fetching products:", e); return null; }),
-          fetchWithTimeout(dataService.getExpenses(userId), "expenses").catch(e => { console.error("Error fetching expenses:", e); return null; })
-        ]);
-
-        if (supps) {
-          setSupplies(supps);
-          localStorage.setItem('supplies', JSON.stringify(supps));
-        }
-        if (prods) {
-          setProducts(prods);
-          localStorage.setItem('products', JSON.stringify(prods));
-        }
-        if (exps) {
-          setExpenses(exps);
-          localStorage.setItem('expenses', JSON.stringify(exps));
-        }
-
-        console.log("☁️ END sync with cloud.");
       }
+
+      // Parallel fetch of other user data (even if profile timed out, we still try getting products)
+      const [supps, prods, exps] = await Promise.all([
+        fetchWithTimeout(dataService.getSupplies(userId), "supplies").catch(e => { console.error("Error fetching supplies:", e); return null; }),
+        fetchWithTimeout(dataService.getProducts(userId), "products").catch(e => { console.error("Error fetching products:", e); return null; }),
+        fetchWithTimeout(dataService.getExpenses(userId), "expenses").catch(e => { console.error("Error fetching expenses:", e); return null; })
+      ]);
+
+      if (supps) {
+        setSupplies(supps);
+        localStorage.setItem('supplies', JSON.stringify(supps));
+      }
+      if (prods) {
+        setProducts(prods);
+        localStorage.setItem('products', JSON.stringify(prods));
+      }
+      if (exps) {
+        setExpenses(exps);
+        localStorage.setItem('expenses', JSON.stringify(exps));
+      }
+
+      console.log("☁️ END sync with cloud.");
       
       // Always stop loading once we've tried everything
       setLoading(false);
     } catch (err) {
       console.error("❌ Critical error in refreshUserData:", err);
       setLoading(false);
+    } finally {
+      isSyncing.current = false;
     }
   }
 
