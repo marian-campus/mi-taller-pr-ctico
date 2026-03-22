@@ -37,7 +37,7 @@ export default function AIAssistant() {
             : 0;
 
         const userContext = {
-            lista_productos: products.map(p => ({
+            lista_productos: products.filter(p => p.active !== false).map(p => ({
                 nombre: p.name,
                 categoria: p.category,
                 costo_total: p.totalCost,

@@ -16,7 +16,9 @@ export default function PrecioJusto() {
   const { products = [], updateProduct, user } = useApp();
   const navigate = useNavigate();
 
-  const [selectedId, setSelectedId] = useState(products[0]?.id || '');
+  const activeProducts = products.filter(p => p.active !== false);
+  const [selectedId, setSelectedId] = useState(activeProducts[0]?.id || '');
+
   const [margin, setMargin] = useState([70]);
   const [comp1, setComp1] = useState('');
   const [comp2, setComp2] = useState('');
@@ -24,14 +26,18 @@ export default function PrecioJusto() {
 
   // Handle selectedId when products load
   useEffect(() => {
-    if (products.length > 0 && !selectedId) {
-      setSelectedId(products[0].id);
+    if (activeProducts.length > 0) {
+      if (!selectedId || !activeProducts.some(p => p.id === selectedId)) {
+        setSelectedId(activeProducts[0].id);
+      }
+    } else if (selectedId) {
+      setSelectedId('');
     }
-  }, [products, selectedId]);
+  }, [activeProducts, selectedId]);
 
   if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando datos...</div></Layout>;
 
-  const product = products.find(p => p.id === selectedId);
+  const product = activeProducts.find(p => p.id === selectedId);
   const cost = product?.totalCost || 0;
   const marginPct = margin[0];
   const suggestedPrice = Math.round(cost * (1 + marginPct / 100));
@@ -57,8 +63,8 @@ export default function PrecioJusto() {
           <Label className="text-muted-foreground font-semibold">1. Seleccioná el producto a costear</Label>
           <select value={selectedId} onChange={e => setSelectedId(e.target.value)}
             className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm font-medium focus:ring-2 focus:ring-primary shadow-sm">
-            {products.length === 0 && <option value="">No hay productos creados</option>}
-            {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {activeProducts.length === 0 && <option value="">No hay productos activos creados</option>}
+            {activeProducts.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
 
