@@ -112,11 +112,17 @@ export const generateManagementReport = (
 
     doc.setFont('helvetica', 'bold');
     if (netProfit >= 0) {
-        doc.setTextColor(0, 150, 0);
+        doc.setTextColor(0, 150, 0); // Green for profit
+        doc.text(`GANANCIA NETA ESTIMADA: ${formatCurrency(netProfit, user.currencySymbol)}`, 14, finalY3 + 30);
     } else {
-        doc.setTextColor(200, 0, 0);
+        doc.setTextColor(200, 0, 0); // Red for loss
+        doc.text(`PÉRDIDA NETA ESTIMADA: ${formatCurrency(Math.abs(netProfit), user.currencySymbol)}`, 14, finalY3 + 30);
     }
-    doc.text(`GANANCIA NETA ESTIMADA: ${formatCurrency(netProfit, user.currencySymbol)}`, 14, finalY3 + 30);
+
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text('* Calculado sobre el precio de venta sugerido menos costos totales (insumos, mano de obra y costos indirectos).', 14, finalY3 + 38);
 
     // Save
     doc.save(`Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`);
