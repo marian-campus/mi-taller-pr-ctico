@@ -124,6 +124,19 @@ export const generateManagementReport = (
     doc.setTextColor(120, 120, 120);
     doc.text('* Calculado sobre el precio de venta sugerido menos costos totales (insumos, mano de obra y costos indirectos).', 14, finalY3 + 38);
 
-    // Save
-    doc.save(`Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`);
+    // Cleanup Blob URL manually to avoid memory leaks or infinite reloads
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup isolated
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 250);
 };

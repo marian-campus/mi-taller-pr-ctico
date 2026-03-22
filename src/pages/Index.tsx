@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
 import { Plus, Receipt, Settings, Download } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { generateManagementReport } from '@/lib/pdfUtils';
 import StepGuide from '@/components/StepGuide';
 
@@ -27,8 +27,20 @@ export default function Dashboard() {
     }
   }, [loading, user, navigate]);
 
-  const handleGenerateReport = () => {
-    generateManagementReport(user!, products, expenses, totalExpenses, totalProjectedProfit, projection);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  const handleGenerateReport = async () => {
+    if (isGeneratingPDF) return;
+    setIsGeneratingPDF(true);
+    try {
+      // Small delay to allow UI to update to loading state
+      await new Promise(resolve => setTimeout(resolve, 50));
+      generateManagementReport(user!, products, expenses, totalExpenses, totalProjectedProfit, projection);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   if (loading || !user) {
@@ -54,10 +66,15 @@ export default function Dashboard() {
                 variant="ghost"
                 size="icon"
                 onClick={handleGenerateReport}
-                className="h-8 w-8 text-primary hover:bg-primary/10"
+                disabled={isGeneratingPDF}
+                className={`h-8 w-8 text-primary hover:bg-primary/10 ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title="Generar Reporte del Mes (PDF)"
               >
-                <Download className="h-5 w-5" />
+                {isGeneratingPDF ? (
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Download className="h-5 w-5" />
+                )}
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">{user.businessName}</p>
