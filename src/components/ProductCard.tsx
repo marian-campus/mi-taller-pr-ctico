@@ -86,12 +86,9 @@ export default function ProductCard({
   if (variant === 'highlighted') {
     return (
       <Card className={cn(
-        "p-4 hover:shadow-md transition-all relative",
+        "p-4 hover:shadow-md transition-all",
         isInactive && "opacity-60 grayscale-[0.8] bg-muted/20 border-dashed"
       )}>
-        <div className="absolute top-2 right-2">
-          <DeleteButton />
-        </div>
         <div className="space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
@@ -99,7 +96,7 @@ export default function ProductCard({
                 {categoryEmojis[product.category] || '📦'}
               </div>
               <div className="min-w-0 text-left">
-                <h3 className="font-bold text-lg text-foreground truncate pr-6">{product.name}</h3>
+                <h3 className="font-bold text-lg text-foreground truncate">{product.name}</h3>
                 <div className="flex flex-col items-start gap-1">
                   <Switch
                     checked={product.active !== false}
@@ -140,6 +137,7 @@ export default function ProductCard({
             >
               <Edit2 className="h-3.5 w-3.5" /> Editar
             </Button>
+            <DeleteButton />
           </div>
         </div>
       </Card>
