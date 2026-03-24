@@ -58,4 +58,5 @@ export interface UserSettings {
   country: string;
   currencySymbol: string;
   language: string;
+  logoUrl?: string;
 }

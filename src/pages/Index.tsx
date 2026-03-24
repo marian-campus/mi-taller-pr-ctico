@@ -59,27 +59,41 @@ export default function Dashboard() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-foreground">¡Hola {user.name}! 👋</h1>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleGenerateReport}
-                disabled={isGeneratingPDF}
-                className={`h-8 w-8 text-primary hover:bg-primary/10 ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : ''}`}
-                title="Generar Reporte del Mes (PDF)"
-              >
-                {isGeneratingPDF ? (
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-4">
+            <Link to="/perfil" className="relative group">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center border-2 border-primary/20 overflow-hidden shadow-sm group-hover:scale-105 transition-transform">
+                {user.logoUrl ? (
+                  <img src={user.logoUrl} alt="Logo" className="h-full w-full object-cover" />
                 ) : (
-                  <Download className="h-5 w-5" />
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-xl font-black text-primary/40">
+                      {user.businessName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'MN'}
+                    </span>
+                  </div>
                 )}
-              </Button>
+              </div>
+            </Link>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-black text-foreground">¡Hola {user.name.split(' ')[0]}! 👋</h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleGenerateReport}
+                  disabled={isGeneratingPDF}
+                  className={`h-8 w-8 text-primary hover:bg-primary/10 ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {isGeneratingPDF ? (
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Download className="h-5 w-5" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-70">{user.businessName}</p>
             </div>
-            <p className="text-sm text-muted-foreground">{user.businessName}</p>
           </div>
-          <Link to="/perfil" className="p-2 rounded-lg hover:bg-muted transition-colors">
+          <Link to="/perfil" className="p-3 bg-muted/50 rounded-2xl hover:bg-muted transition-colors shadow-sm">
             <Settings className="h-5 w-5 text-muted-foreground" />
           </Link>
         </div>

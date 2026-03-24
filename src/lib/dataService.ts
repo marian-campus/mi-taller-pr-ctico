@@ -38,7 +38,8 @@ export const dataService = {
             monthlyWorkingHours: Number(data.monthly_working_hours) || 0,
             country: data.country || '',
             currencySymbol: data.currency_symbol || '$',
-            language: data.language || 'es'
+            language: data.language || 'es',
+            logoUrl: data.logo_url || ''
         } as UserSettings;
     },
 
@@ -62,6 +63,7 @@ export const dataService = {
         if (profile.currencySymbol) payload.currency_symbol = profile.currencySymbol;
         if (profile.language) payload.language = profile.language;
         if (profile.country) payload.country = profile.country;
+        if (profile.logoUrl) payload.logo_url = profile.logoUrl;
 
 
         const { data, error } = await supabase
@@ -103,6 +105,7 @@ export const dataService = {
         if (profile.country !== undefined) payload.country = profile.country;
         if (profile.currencySymbol !== undefined) payload.currency_symbol = profile.currencySymbol;
         if (profile.language !== undefined) payload.language = profile.language;
+        if (profile.logoUrl !== undefined) payload.logo_url = profile.logoUrl;
 
         const { data, error } = await supabase
             .from('profiles')

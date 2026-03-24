@@ -171,7 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               id: authUser.id,
               name: authUser.user_metadata?.first_name || authUser.email?.split('@')[0] || 'Usuario',
               businessName: 'Mi Negocio',
-              businessCategory: 'gastronomia',
+              businessCategory: 'Gastronomía',
               startDate: new Date().toISOString().split('T')[0],
               location: '',
               hourlyRate: 0,

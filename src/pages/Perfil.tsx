@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { useApp } from '@/context/AppContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Moon, Sun, Globe, User, LogOut, ChevronRight, Calculator } from 'lucide-react';
+import { Moon, Sun, Globe, User, LogOut, ChevronRight, Calculator, Camera, Loader2 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
@@ -15,11 +16,45 @@ export default function Perfil() {
   const { user, updateProfile } = useApp();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const [uploading, setUploading] = useState(false);
 
   if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando perfil...</div></Layout>;
 
   const handleUpdateField = async (field: string, val: any) => {
     await updateProfile({ [field]: val });
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setUploading(true);
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // 1. Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('logos')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // 2. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('logos')
+        .getPublicUrl(filePath);
+
+      // 3. Update Profile
+      await updateProfile({ logoUrl: publicUrl });
+      toast.success('Logo actualizado correctamente');
+    } catch (error: any) {
+      console.error('Error uploading logo:', error.message);
+      toast.error('Error al subir el logo. Verifica que el bucket "logos" exista.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleUpdateLabor = async (salary: number, hours: number) => {
@@ -32,12 +67,7 @@ export default function Perfil() {
   };
 
   const countries = ['Argentina', 'Chile', 'Uruguay', 'México', 'Colombia', 'España', 'Otro'];
-  const currencies = [
-    { code: '$', name: 'Pesos ($)' },
-    { code: 'USD', name: 'Dólares (USD)' },
-    { code: '€', name: 'Euros (€)' },
-    { code: 'Mex$', name: 'Pesos Mex (Mex$)' }
-  ];
+  const categories = ['Gastronomía', 'Textil', 'Servicios', 'Artesanías', 'Otro'];
 
   return (
     <Layout title="Perfil">
@@ -45,42 +75,62 @@ export default function Perfil() {
 
         {/* Profile Branding */}
         <Card className="p-6 rounded-3xl bg-gradient-to-br from-primary/5 to-primary/10 border-primary/10">
-          <div className="flex items-center gap-4">
-            <div className="h-16 w-16 bg-primary/20 rounded-2xl flex items-center justify-center text-3xl">
-              🏢
+          <div className="flex flex-col items-center text-center space-y-4 mb-6">
+            <div className="relative group">
+              <div className="h-24 w-24 bg-primary/10 rounded-3xl flex items-center justify-center text-4xl overflow-hidden border-2 border-primary/20 shadow-inner">
+                {user.logoUrl ? (
+                  <img src={user.logoUrl} alt="Logo" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center">
+                    <span className="text-3xl font-black text-primary/40 leading-none">
+                      {user.businessName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'MN'}
+                    </span>
+                  </div>
+                )}
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  </div>
+                )}
+              </div>
+              <label className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground p-2 rounded-xl cursor-pointer shadow-lg hover:scale-110 transition-transform">
+                <Camera className="h-4 w-4" />
+                <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={uploading} />
+              </label>
             </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-foreground">Tu emprendimiento</h2>
-              <p className="text-xs text-muted-foreground">Personalizá cómo te ven tus clientes</p>
+            <div>
+              <h2 className="text-xl font-black text-foreground">{user.businessName || 'Tu Negocio'}</h2>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{user.businessCategory || 'Gastronomía'}</p>
             </div>
           </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-muted-foreground uppercase">Nombre del Negocio</Label>
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Nombre del Emprendimiento</Label>
               <Input
                 value={user.businessName}
                 onChange={e => handleUpdateField('businessName', e.target.value)}
                 placeholder="Ej: Dulces de Maru"
-                className="rounded-xl h-11"
+                className="rounded-xl h-12 bg-background border-none shadow-sm focus-visible:ring-primary text-base"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-muted-foreground uppercase">Tu Nombre</Label>
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Rubro / Categoría</Label>
+              <select
+                value={user.businessCategory || 'Gastronomía'}
+                onChange={e => handleUpdateField('businessCategory', e.target.value)}
+                className="w-full h-12 rounded-xl border-none bg-background shadow-sm px-3 text-base font-medium focus:ring-2 focus:ring-primary appearance-none"
+              >
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Tu Nombre de Usuario</Label>
               <Input
                 value={user.name}
                 onChange={e => handleUpdateField('name', e.target.value)}
                 placeholder="Tu nombre"
-                className="rounded-xl h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-muted-foreground uppercase">Ubicación / Ciudad</Label>
-              <Input
-                value={user.location}
-                onChange={e => handleUpdateField('location', e.target.value)}
-                placeholder="Ej: Ciudad de Buenos Aires"
-                className="rounded-xl h-11"
+                className="rounded-xl h-11 bg-background/50"
               />
             </div>
           </div>
