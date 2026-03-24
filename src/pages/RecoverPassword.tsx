@@ -3,18 +3,44 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function RecoverPassword() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        toast.success('Instrucciones enviadas a tu email');
-        setTimeout(() => navigate('/'), 2000);
+        setLoading(true);
+
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+
+            if (error) {
+                // Handle rate limit error specifically as requested
+                if (error.message.toLowerCase().includes('rate limit') || 
+                    error.status === 429 || 
+                    error.message.toLowerCase().includes('security purposes')) {
+                    toast.error('Espera unos minutos antes de solicitar otro enlace');
+                } else {
+                    toast.error(error.message || 'Error al enviar el correo');
+                }
+                return;
+            }
+
+            toast.success('Instrucciones enviadas a tu email');
+            setTimeout(() => navigate('/'), 2000);
+        } catch (error: any) {
+            toast.error('Ocurrió un error inesperado');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -46,8 +72,12 @@ export default function RecoverPassword() {
                             />
                         </div>
 
-                        <Button type="submit" className="w-full h-12 text-lg font-bold rounded-xl mt-2">
-                            Enviar instrucciones
+                        <Button 
+                            type="submit" 
+                            className="w-full h-12 text-lg font-bold rounded-xl mt-2"
+                            disabled={loading}
+                        >
+                            {loading ? 'Enviando...' : 'Enviar instrucciones'}
                         </Button>
                     </form>
                 </Card>

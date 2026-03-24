@@ -8,6 +8,7 @@ import { AppProvider } from "./context/AppContext";
 import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import RecoverPassword from "./pages/RecoverPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Index from "./pages/Index";
 import Recetario from "./pages/Recetario";
 import CrearProducto from "./pages/CrearProducto";
@@ -47,6 +48,7 @@ const App = () => {
                 <Route path="/" element={<Landing />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/recover" element={<RecoverPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/dashboard" element={<Index />} />
                 <Route path="/recetario" element={<Recetario />} />
                 <Route path="/recetario/nuevo" element={<CrearProducto />} />
