@@ -290,22 +290,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const deleteProduct = async (id: string) => {
-    if (!user?.id) return;
-    try {
-      await dataService.deleteProduct(id);
-      setProducts(prev => {
-        const next = prev.filter(x => x.id !== id);
-        localStorage.setItem('products', JSON.stringify(next));
-        return next;
-      });
-      toast.success('Producto eliminado');
-    } catch (err) {
-      console.error('Error deleting product:', err);
-      toast.error('Error al eliminar el producto');
-    }
-  };
-
   const toggleProductActive = async (id: string) => {
     if (!user?.id) return;
     const product = products.find(p => p.id === id);
