@@ -50,8 +50,8 @@ export default function Perfil() {
       await updateProfile({ logoUrl: publicUrl });
       toast.success('Logo actualizado correctamente');
     } catch (error: any) {
-      console.error('Error uploading logo:', error.message);
-      toast.error('Error al subir el logo. Verifica que el bucket "logos" exista.');
+      console.error('Error uploading logo:', error);
+      toast.error(`Error: ${error.message || 'No se pudo subir la imagen'}`);
     } finally {
       setUploading(false);
     }
