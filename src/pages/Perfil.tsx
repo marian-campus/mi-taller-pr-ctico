@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Moon, Sun, Globe, User, LogOut, ChevronRight, Calculator, Camera, Loader2 } from 'lucide-react';
+import { Moon, Sun, Globe, User, LogOut, ChevronRight, Camera, Loader2 } from 'lucide-react';
 import { useTheme } from '@/components/theme-provider';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
@@ -57,17 +57,8 @@ export default function Perfil() {
     }
   };
 
-  const handleUpdateLabor = async (salary: number, hours: number) => {
-    const rate = hours > 0 ? salary / hours : 0;
-    await updateProfile({
-      monthlySalary: salary,
-      monthlyWorkingHours: hours,
-      hourlyRate: rate
-    });
-  };
 
   const countries = ['Argentina', 'Chile', 'Uruguay', 'México', 'Colombia', 'España', 'Otro'];
-  const categories = ['Gastronomía', 'Textil', 'Servicios', 'Artesanías', 'Otro'];
 
   return (
     <Layout title="Perfil">
@@ -100,7 +91,6 @@ export default function Perfil() {
             </div>
             <div>
               <h2 className="text-xl font-black text-foreground">{user.businessName || 'Tu Negocio'}</h2>
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{user.businessCategory || 'Gastronomía'}</p>
             </div>
           </div>
 
@@ -115,16 +105,6 @@ export default function Perfil() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Rubro / Categoría</Label>
-              <select
-                value={user.businessCategory || 'Gastronomía'}
-                onChange={e => handleUpdateField('businessCategory', e.target.value)}
-                className="w-full h-12 rounded-xl border-none bg-background shadow-sm px-3 text-base font-medium focus:ring-2 focus:ring-primary appearance-none"
-              >
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="space-y-2">
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Tu Nombre de Usuario</Label>
               <Input
                 value={user.name}
@@ -132,54 +112,6 @@ export default function Perfil() {
                 placeholder="Tu nombre"
                 className="rounded-xl h-11 bg-background/50"
               />
-            </div>
-          </div>
-        </Card>
-
-        {/* Labor Calculation Settings */}
-        <Card className="p-6 rounded-3xl border-primary/10">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-10 w-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-              <Calculator className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-foreground leading-tight">Mano de Obra</h3>
-              <p className="text-xs text-muted-foreground">Configurá cuánto vale tu tiempo</p>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-muted-foreground uppercase">Sueldo Mensual Deseado</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-3 text-muted-foreground">{user.currencySymbol}</span>
-                <Input
-                  type="number"
-                  value={user.monthlySalary || ''}
-                  onChange={e => handleUpdateLabor(parseFloat(e.target.value) || 0, user.monthlyWorkingHours)}
-                  placeholder="0.00"
-                  className="rounded-xl h-11 pl-8"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-bold text-muted-foreground uppercase">Horas de Trabajo al Mes</Label>
-              <Input
-                type="number"
-                value={user.monthlyWorkingHours || ''}
-                onChange={e => handleUpdateLabor(user.monthlySalary, parseFloat(e.target.value) || 0)}
-                placeholder="Ej: 160"
-                className="rounded-xl h-11"
-              />
-            </div>
-            
-            <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 mt-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-muted-foreground">Tu Valor Hora:</span>
-                <span className="text-xl font-black text-primary">
-                  {user.currencySymbol}{user.hourlyRate.toFixed(2)}
-                </span>
-              </div>
             </div>
           </div>
         </Card>
