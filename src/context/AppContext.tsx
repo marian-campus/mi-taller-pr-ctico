@@ -255,10 +255,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateProduct = async (p: Product, ingredients?: any[]) => {
+  const deleteProduct = async (id: string) => {
     if (!user?.id) return;
     try {
-      await dataService.updateProduct(p.id, p, ingredients);
+      setProducts(prev => {
+        const next = prev.filter(p => p.id !== id);
+        localStorage.setItem('products', JSON.stringify(next));
+        return next;
+      });
+      await dataService.deleteProduct(id);
+      toast.success('Producto eliminado');
+    } catch (err: any) {
+      console.error('Error deleting product:', err);
+      toast.error('Error al eliminar producto');
+      // No re-fetching here to avoid jitter, but in a real app we might
+    }
+  };
+
+  const updateProduct = async (id: string, updates: Partial<Product>, ingredients?: any[]) => {
+    if (!user?.id) return;
+    try {
+      await dataService.updateProduct(id, updates, ingredients);
       
       // Fetch the updated product to ensure consistent state
       const userId = user.id;
