@@ -50,7 +50,7 @@ export default function PrecioJusto() {
 
   const handleSave = () => {
     if (product) {
-      updateProduct({ ...product, sellingPrice: suggestedPrice });
+      updateProduct(product.id, { sellingPrice: suggestedPrice });
       toast.success('¡Precio sugerido guardado!');
     }
   };

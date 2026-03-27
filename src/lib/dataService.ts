@@ -209,6 +209,7 @@ export const dataService = {
             fixedCostPerUnit: Number(p.fixed_cost_per_unit) || 0,
             totalCost: Number(p.total_cost) || 0,
             sellingPrice: p.selling_price ? Number(p.selling_price) : undefined,
+            estimatedUnitsPerMonth: Number(p.estimated_units_per_month) || 10,
             active: p.active !== false,
             createdAt: p.created_at,
             ingredients: (p.ingredients || []).filter((i: Record<string, unknown>) => !i.is_packaging).map((i: Record<string, unknown>) => ({
@@ -338,6 +339,7 @@ export const dataService = {
         if (product.totalCost !== undefined) payload.total_cost = product.totalCost;
         if (product.sellingPrice !== undefined) payload.selling_price = product.sellingPrice;
         if (product.active !== undefined) payload.active = product.active;
+        if (product.estimatedUnitsPerMonth !== undefined) payload.estimated_units_per_month = product.estimatedUnitsPerMonth;
 
         const { error: prodError } = await supabase
             .from('products')

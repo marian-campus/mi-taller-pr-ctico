@@ -350,6 +350,7 @@ export default function CrearProducto() {
           cost: Math.round(labCost)
         },
         includeFixedCosts: includeFixed,
+        estimatedUnitsPerMonth: estUnits,
         fixedCostPerUnit: fixedPU,
         totalCost: totalCost,
         active: existing?.active ?? true,
