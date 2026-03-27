@@ -200,6 +200,11 @@ export const dataService = {
             id: p.id,
             name: p.name || 'Sin nombre',
             category: p.category || 'gastronomia',
+            services: p.services_hours !== undefined ? {
+                hours: Number(p.services_hours) || 0,
+                minutes: Number(p.services_minutes) || 0,
+                cost: Number(p.services_cost) || 0
+            } : undefined,
             labor: {
                 hours: Number(p.labor_hours) || 0,
                 minutes: Number(p.labor_minutes) || 0,
@@ -208,22 +213,22 @@ export const dataService = {
             includeFixedCosts: p.include_fixed_costs || false,
             fixedCostPerUnit: Number(p.fixed_cost_per_unit) || 0,
             totalCost: Number(p.total_cost) || 0,
-            sellingPrice: p.selling_price ? Number(p.selling_price) : undefined,
+            sellingPrice: (p.selling_price !== null && p.selling_price !== undefined) ? Number(p.selling_price) : undefined,
             estimatedUnitsPerMonth: Number(p.estimated_units_per_month) || 10,
             active: p.active !== false,
             createdAt: p.created_at,
-            ingredients: (p.ingredients || []).filter((i: Record<string, unknown>) => !i.is_packaging).map((i: Record<string, unknown>) => ({
+            ingredients: (p.ingredients || []).filter((i: any) => !i.is_packaging).map((i: any) => ({
                 id: i.id,
                 supplyId: i.supply_id,
-                name: i.name || 'Ingrediente',
+                name: i.supply?.name || i.name || 'Ingrediente',
                 quantityUsed: Number(i.quantity_used) || 0,
                 unit: i.unit || 'un',
                 cost: Number(i.cost) || 0
             })),
-            packaging: (p.ingredients || []).filter((i: Record<string, unknown>) => i.is_packaging).map((i: Record<string, unknown>) => ({
+            packaging: (p.ingredients || []).filter((i: any) => i.is_packaging).map((i: any) => ({
                 id: i.id,
                 supplyId: i.supply_id,
-                name: i.name || 'Envase',
+                name: i.supply?.name || i.name || 'Envase',
                 quantityUsed: Number(i.quantity_used) || 0,
                 unit: i.unit || 'un',
                 cost: Number(i.cost) || 0
@@ -244,7 +249,10 @@ export const dataService = {
             .from('products')
             .select(`
         *,
-        ingredients:product_ingredients(*)
+        ingredients:product_ingredients(
+          *,
+          supply:supplies(name)
+        )
       `)
             .eq('user_id', finalUserId)
             .order('created_at', { ascending: false });
@@ -312,7 +320,10 @@ export const dataService = {
             .from('products')
             .select(`
                 *,
-                ingredients:product_ingredients(*)
+                ingredients:product_ingredients(
+                  *,
+                  supply:supplies(name)
+                )
             `)
             .eq('id', productId)
             .single();
@@ -333,6 +344,11 @@ export const dataService = {
             payload.labor_hours = product.labor.hours;
             payload.labor_minutes = product.labor.minutes;
             payload.labor_cost = product.labor.cost;
+        }
+        if (product.services !== undefined) {
+            payload.services_hours = product.services.hours;
+            payload.services_minutes = product.services.minutes;
+            payload.services_cost = product.services.cost;
         }
         if (product.includeFixedCosts !== undefined) payload.include_fixed_costs = product.includeFixedCosts;
         if (product.fixedCostPerUnit !== undefined) payload.fixed_cost_per_unit = product.fixedCostPerUnit;
