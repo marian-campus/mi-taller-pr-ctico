@@ -13,6 +13,16 @@ import { ArrowLeft, ArrowRight, Plus, X, Search, Check, Trash2, Clock, Package, 
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { categoryEmojis } from '@/components/CategoryIcon';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const productCategories = [
   { value: 'gastronomia', label: '🍰 Gastronomía' },
@@ -126,6 +136,9 @@ export default function CrearProducto() {
   const [tempPP, setTempPP] = useState('');
   const [tempQB, setTempQB] = useState('');
 
+  // Delete supply confirmation (AlertDialog instead of window.confirm)
+  const [deletingSupplyId, setDeletingSupplyId] = useState<string | null>(null);
+
   // Calculations
   const ingCost = ingredients.reduce((s, i) => s + i.cost, 0);
   const packCost = usePackaging ? packaging.reduce((s, i) => s + (i.enabled !== false ? i.cost : 0), 0) : 0;
@@ -216,9 +229,15 @@ export default function CrearProducto() {
       return;
     }
 
-    if (window.confirm('¿Seguro que querés eliminar este insumo?')) {
-      deleteSupply(supplyId);
+    // Open AlertDialog instead of window.confirm (incompatible with mobile WebViews)
+    setDeletingSupplyId(supplyId);
+  };
+
+  const confirmDeleteSupply = () => {
+    if (deletingSupplyId) {
+      deleteSupply(deletingSupplyId);
       toast.success('Insumo eliminado');
+      setDeletingSupplyId(null);
     }
   };
 
@@ -323,6 +342,8 @@ export default function CrearProducto() {
       const productData = {
         name,
         category,
+        // Bug #2 fix: preserve sellingPrice when updating (was missing, causing price to be wiped)
+        sellingPrice: existing?.sellingPrice,
         labor: {
           hours: labHours,
           minutes: labMinutes,
@@ -354,7 +375,8 @@ export default function CrearProducto() {
       ];
 
       if (id && existing) {
-        await updateProduct({ ...existing, ...productData } as Product, allIngredients);
+        // Bug #1 fix: use existing.id (string) not the full product object as first argument
+        await updateProduct(existing.id, productData, allIngredients);
         toast.success('🎯 ¡Producto actualizado!');
       } else {
         await addProduct(productData, allIngredients);
@@ -901,6 +923,27 @@ export default function CrearProducto() {
           </div>
         )}
       </div>
-    </Layout >
+
+      {/* Bug #3 Fix: AlertDialog for supply deletion (replaces window.confirm for mobile compatibility) */}
+      <AlertDialog open={!!deletingSupplyId} onOpenChange={(open) => !open && setDeletingSupplyId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar este insumo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará el insumo de tu lista de materiales.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteSupply}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Layout>
   );
 }
