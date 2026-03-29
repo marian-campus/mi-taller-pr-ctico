@@ -107,31 +107,7 @@ export default function PrecioJusto() {
               </div>
             </Card>
 
-            {/* Competitor Price Comparison */}
-            <Card className="p-5 space-y-4 rounded-2xl">
-              <h3 className="font-bold">3. Compará con tu Competencia</h3>
-              <p className="text-xs text-muted-foreground">Ingresá precios de referencia del mercado para saber dónde estás parado.</p>
-              <div className="grid grid-cols-3 gap-3">
-                <Input type="number" placeholder="$ Ref 1" value={comp1} onChange={e => setComp1(e.target.value)} className="rounded-lg" />
-                <Input type="number" placeholder="$ Ref 2" value={comp2} onChange={e => setComp2(e.target.value)} className="rounded-lg" />
-                <Input type="number" placeholder="$ Ref 3" value={comp3} onChange={e => setComp3(e.target.value)} className="rounded-lg" />
-              </div>
-              {avgComp > 0 && (
-                <div className={cn(
-                  "p-4 rounded-xl text-sm font-medium",
-                  diffPct > 0 ? "bg-amber-100 text-amber-900 border border-amber-200" : "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                )}>
-                  <p>Promedio del mercado: <strong>{formatCurrency(avgComp, user?.currencySymbol)}</strong></p>
-                  <p className="mt-1">
-                    Estás {Math.abs(diffPct)}% {diffPct > 0 ? (
-                      <span><strong className="text-amber-700">por encima</strong>. Asegurate de que tu calidad sea superior.</span>
-                    ) : (
-                      <span><strong className="text-emerald-700">por debajo</strong>. Tenés un precio muy competitivo.</span>
-                    )}
-                  </p>
-                </div>
-              )}
-            </Card>
+
 
             <Button onClick={handleSave} className="w-full h-14 text-lg font-bold rounded-2xl">
               Guardar este precio en el producto
