@@ -117,9 +117,6 @@ export default function Bolsillo() {
   return (
     <Layout title="💰 Mi Negocio">
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground px-1">
-          Un espacio para registrar los gastos mensuales de tu negocio. Estos gastos se suman para calcular automáticamente el <strong>Costo Fijo Proporcional</strong> en tus productos.
-        </p>
 
         <Card className="p-4 space-y-4 rounded-xl border-border/50 shadow-sm">
           <div>
@@ -140,6 +137,12 @@ export default function Bolsillo() {
               className="min-h-[80px] bg-background/50 focus:bg-background transition-colors"
             />
           </div>
+        </Card>
+
+        <Card className="p-4 bg-accent/20 border-accent/30 rounded-xl">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Un espacio para registrar los gastos mensuales de tu negocio. Estos gastos se suman para calcular automáticamente el <strong>Costo Fijo Proporcional</strong> en tus productos.
+          </p>
         </Card>
 
 
