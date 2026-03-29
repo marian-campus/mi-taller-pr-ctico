@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import CategoryIcon from '@/components/CategoryIcon';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Plus, Pencil, Trash2, Calculator, ChevronRight, Save } from 'lucide-react';
@@ -33,11 +34,13 @@ export default function Bolsillo() {
   const [year, setYear] = useState(now.getFullYear());
 
   // Form state for Section A
-  const [form, setForm] = useState({ 
+  const [form, setForm] = useState<any>({ 
     monthlySalary: user?.monthlySalary || 0,
     monthlyWorkingHours: user?.monthlyWorkingHours || 0,
     hourlyRate: user?.hourlyRate || 0,
     currencySymbol: user?.currencySymbol || '$',
+    businessDescription: user?.businessDescription || '',
+    mainProducts: user?.mainProducts || '',
     ...user 
   });
 
@@ -52,8 +55,9 @@ export default function Bolsillo() {
     setForm(prev => {
       const next = { ...prev, [field]: value };
       if (field === 'monthlySalary' || field === 'monthlyWorkingHours') {
-        const salary = field === 'monthlySalary' ? (parseFloat(value) || 0) : prev.monthlySalary;
-        const hours = field === 'monthlyWorkingHours' ? (parseFloat(value) || 0) : prev.monthlyWorkingHours;
+        const valStr = String(value);
+        const salary = field === 'monthlySalary' ? (parseFloat(valStr) || 0) : Number(prev.monthlySalary);
+        const hours = field === 'monthlyWorkingHours' ? (parseFloat(valStr) || 0) : Number(prev.monthlyWorkingHours);
         next.hourlyRate = hours > 0 ? (salary / hours) : 0;
       }
       return next;
@@ -72,7 +76,9 @@ export default function Bolsillo() {
       await updateProfile({
         monthlySalary: Number(form.monthlySalary),
         monthlyWorkingHours: Number(form.monthlyWorkingHours),
-        hourlyRate: Number(form.hourlyRate)
+        hourlyRate: Number(form.hourlyRate),
+        businessDescription: form.businessDescription,
+        mainProducts: form.mainProducts
       });
       toast.success('Configuración guardada');
     } catch (err) {
@@ -114,6 +120,27 @@ export default function Bolsillo() {
         <p className="text-sm text-muted-foreground px-1">
           Un espacio para registrar los gastos mensuales de tu negocio. Estos gastos se suman para calcular automáticamente el <strong>Costo Fijo Proporcional</strong> en tus productos.
         </p>
+
+        <Card className="p-4 space-y-4 rounded-xl border-border/50 shadow-sm">
+          <div>
+            <Label className="text-sm font-bold text-foreground mb-1.5 block">Breve Descripción de Mi Negocio o Emprendimiento</Label>
+            <Textarea 
+              placeholder="Ej: Taller de costura artesanal especializado en accesorios..."
+              value={form.businessDescription}
+              onChange={e => updateForm('businessDescription', e.target.value)}
+              className="min-h-[80px] bg-background/50 focus:bg-background transition-colors"
+            />
+          </div>
+          <div>
+            <Label className="text-sm font-bold text-foreground mb-1.5 block">Productos principales de Venta</Label>
+            <Textarea 
+              placeholder="Ej: Mochilas, cartucheras, bolsos de tela..."
+              value={form.mainProducts}
+              onChange={e => updateForm('mainProducts', e.target.value)}
+              className="min-h-[80px] bg-background/50 focus:bg-background transition-colors"
+            />
+          </div>
+        </Card>
 
 
         {/* Month selector */}

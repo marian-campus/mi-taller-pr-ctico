@@ -39,7 +39,9 @@ export const dataService = {
             country: data.country || '',
             currencySymbol: data.currency_symbol || '$',
             language: data.language || 'es',
-            logoUrl: data.logo_url || ''
+            logoUrl: data.logo_url || '',
+            businessDescription: (data.business_description as string) || '',
+            mainProducts: (data.main_products as string) || ''
         } as UserSettings;
     },
 
@@ -64,6 +66,8 @@ export const dataService = {
         if (profile.language) payload.language = profile.language;
         if (profile.country) payload.country = profile.country;
         if (profile.logoUrl) payload.logo_url = profile.logoUrl;
+        if (profile.businessDescription) payload.business_description = profile.businessDescription;
+        if (profile.mainProducts) payload.main_products = profile.mainProducts;
 
 
         const { data, error } = await supabase
@@ -106,6 +110,8 @@ export const dataService = {
         if (profile.currencySymbol !== undefined) payload.currency_symbol = profile.currencySymbol;
         if (profile.language !== undefined) payload.language = profile.language;
         if (profile.logoUrl !== undefined) payload.logo_url = profile.logoUrl;
+        if (profile.businessDescription !== undefined) payload.business_description = profile.businessDescription;
+        if (profile.mainProducts !== undefined) payload.main_products = profile.mainProducts;
 
         const { data, error } = await supabase
             .from('profiles')

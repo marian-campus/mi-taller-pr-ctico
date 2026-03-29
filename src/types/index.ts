@@ -59,4 +59,6 @@ export interface UserSettings {
   currencySymbol: string;
   language: string;
   logoUrl?: string;
+  businessDescription?: string;
+  mainProducts?: string;
 }

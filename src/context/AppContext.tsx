@@ -179,7 +179,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
               monthlyWorkingHours: 0,
               country: '',
               currencySymbol: '$',
-              language: 'es'
+              language: 'es',
+              businessDescription: '',
+              mainProducts: ''
             });
             console.log("✅ Profile created successfully.");
           } catch (healError) {
