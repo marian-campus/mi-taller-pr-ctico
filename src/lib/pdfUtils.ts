@@ -9,12 +9,16 @@ export const generateManagementReport = (
     expenses: Expense[],
     totalExpenses: number,
     totalProjectedProfit: number,
-    projection: Record<string, { enabled: boolean; qty: string }>
+    projection: Record<string, { enabled: boolean; qty: string }>,
+    selectedMonth?: number,
+    selectedYear?: number
 ) => {
-    const now = new Date();
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    const currentMonthName = months[now.getMonth()];
-    const currentYear = now.getFullYear();
+    const now = new Date();
+    const reportMonth = selectedMonth !== undefined ? selectedMonth : now.getMonth();
+    const reportYear = selectedYear !== undefined ? selectedYear : now.getFullYear();
+    const currentMonthName = months[reportMonth];
+    const currentYear = reportYear;
 
     const doc = new jsPDF();
     const title = `Reporte de Gestión - ${currentMonthName} ${currentYear}`;

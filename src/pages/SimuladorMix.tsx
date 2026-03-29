@@ -3,6 +3,7 @@ import Layout from '@/components/Layout';
 import { useApp } from '@/context/AppContext';
 import { formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,11 +17,30 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { AlertCircle, Rocket } from 'lucide-react';
+import { AlertCircle, Rocket, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { generateManagementReport } from '@/lib/pdfUtils';
+
+const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 export default function SimuladorMix() {
     const context = useApp();
-    const { products = [], user, projection, setProjection, updateProjection, totalProjectedProfit, totalExpenses } = context || { products: [], user: null, projection: {}, setProjection: () => {}, updateProjection: () => {}, totalProjectedProfit: 0, totalExpenses: 0 };
+    const { products = [], user, projection, setProjection, updateProjection, totalProjectedProfit, expenses = [] } = context || { products: [], user: null, projection: {}, setProjection: () => {}, updateProjection: () => {}, totalProjectedProfit: 0, expenses: [] };
+    
+    const now = new Date();
+    const [month, setMonth] = useState(now.getMonth());
+    const [year, setYear] = useState(now.getFullYear());
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+    // Filtered expenses for the selected month/year
+    const { monthExpenses, totalMonthExpenses } = useMemo(() => {
+        const filtered = expenses.filter(e => {
+            const d = new Date(e.date);
+            return d.getMonth() === month && d.getFullYear() === year;
+        });
+        const total = filtered.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        return { monthExpenses: filtered, totalMonthExpenses: total };
+    }, [expenses, month, year]);
     
     // Sync projection state when products load
     useEffect(() => {
@@ -36,27 +56,54 @@ export default function SimuladorMix() {
     // 3. Survival Progress
     const { survivalPercentage, netProfit, isBreakEvenReached } = useMemo(() => {
         const profit = totalProjectedProfit || 0;
-        const expenses = totalExpenses || 0;
-        const perc = expenses > 0
-            ? Math.min(Math.round((profit / expenses) * 100), 100)
+        const expensesTarget = totalMonthExpenses || 0;
+        const perc = expensesTarget > 0
+            ? Math.min(Math.round((profit / expensesTarget) * 100), 100)
             : 100;
-        const net = profit - expenses;
+        const net = profit - expensesTarget;
         return {
             survivalPercentage: isNaN(perc) ? 0 : perc,
             netProfit: net,
             isBreakEvenReached: net >= 0
         };
-    }, [totalExpenses, totalProjectedProfit]);
+    }, [totalMonthExpenses, totalProjectedProfit]);
+
+    const handleGenerateReport = async () => {
+        if (isGeneratingPDF || !user) return;
+        setIsGeneratingPDF(true);
+        try {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            generateManagementReport(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
+            toast.success('Reporte generado correctamente');
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            toast.error('Error al generar el PDF');
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
 
     if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando simulador...</div></Layout>;
 
     return (
         <Layout title="📊 Simulador Mix de Ventas">
             <div className="space-y-5 pb-20 max-w-lg mx-auto">
+                {/* Month Selector */}
+                <div className="flex gap-2 bg-muted/30 p-2 rounded-xl border border-border/50">
+                    <select value={month} onChange={e => setMonth(parseInt(e.target.value))}
+                        className="flex-1 h-10 rounded-lg border-none bg-background px-3 text-sm font-bold focus:ring-2 focus:ring-primary shadow-sm">
+                        {months.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                    </select>
+                    <select value={year} onChange={e => setYear(parseInt(e.target.value))}
+                        className="w-24 h-10 rounded-lg border-none bg-background px-3 text-sm font-bold focus:ring-2 focus:ring-primary shadow-sm">
+                        {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                </div>
+
                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
                     <p className="text-sm text-primary font-medium">
                         Simulá diferentes escenarios activando productos y ajustando cantidades.
-                        El objetivo es que tu ganancia neta supere tus gastos totales.
+                        El objetivo es que tu ganancia neta supere tus gastos totales del mes seleccionado.
                     </p>
                 </div>
 
@@ -146,8 +193,8 @@ export default function SimuladorMix() {
                 {/* Financial Health Message */}
                 <Card className="p-4 space-y-4 rounded-xl border-dashed border-2">
                     <div className="flex justify-between items-end border-b border-dashed pb-2">
-                        <span className="text-sm font-medium text-muted-foreground">Meta (Gastos Totales "Mi Negocio"):</span>
-                        <span className="font-bold text-lg">{formatCurrency(totalExpenses, user?.currencySymbol)}</span>
+                        <span className="text-sm font-medium text-muted-foreground">Meta (Gastos "{months[month]} {year}"):</span>
+                        <span className="font-bold text-lg">{formatCurrency(totalMonthExpenses, user?.currencySymbol)}</span>
                     </div>
 
                     <div className={cn(
@@ -159,7 +206,7 @@ export default function SimuladorMix() {
                         {!isBreakEvenReached ? (
                             <>
                                 <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
-                                <p>Te faltan <strong>{formatCurrency(Math.abs(netProfit), user?.currencySymbol)}</strong> para cubrir tus gastos totales (<strong>{formatCurrency(totalExpenses, user?.currencySymbol)}</strong>).</p>
+                                <p>Te faltan <strong>{formatCurrency(Math.abs(netProfit), user?.currencySymbol)}</strong> para cubrir tus gastos de <strong>{months[month]}</strong> (<strong>{formatCurrency(totalMonthExpenses, user?.currencySymbol)}</strong>).</p>
                             </>
                         ) : (
                             <>
@@ -173,6 +220,41 @@ export default function SimuladorMix() {
                 <p className="text-[10px] text-center text-muted-foreground px-4 italic">
                     * Los resultados se basan en la sumatoria de todas las ganancias (Precio - Costo) de los productos activados multiplicada por la cantidad que proyectes vender.
                 </p>
+
+                {/* Paso Final: Reporte de Gestión */}
+                <div className="pt-4 mt-6 border-t border-border">
+                    <h3 className="text-lg font-bold mb-3 px-1 flex items-center gap-2">
+                         <span className="bg-primary/10 p-2 rounded-lg text-primary">📊</span> Reporte de Gestión
+                    </h3>
+                    <Card className="p-6 bg-gradient-to-br from-card to-muted/30 border-primary/10 rounded-2xl shadow-md border-2 hover:border-primary/30 transition-all group overflow-hidden relative">
+                         <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform">
+                             <Download className="h-24 w-24" />
+                         </div>
+                         <div className="relative space-y-4">
+                             <p className="text-sm text-muted-foreground leading-relaxed">
+                                 Descargá el análisis completo de tu negocio para <strong>{months[month]} {year}</strong>. 
+                                 Incluye gastos, listado de precios y tu proyección de rentabilidad.
+                             </p>
+                             <Button 
+                                 onClick={handleGenerateReport} 
+                                 disabled={isGeneratingPDF}
+                                 className="w-full h-12 gap-2 text-base font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02]"
+                             >
+                                 {isGeneratingPDF ? (
+                                     <>
+                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                         Generando Reporte...
+                                     </>
+                                 ) : (
+                                     <>
+                                         <Download className="h-5 w-5" />
+                                         Descargar Reporte de Gestión
+                                     </>
+                                 )}
+                             </Button>
+                         </div>
+                    </Card>
+                </div>
             </div>
         </Layout>
     );

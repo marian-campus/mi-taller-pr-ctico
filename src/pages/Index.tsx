@@ -7,7 +7,6 @@ import ProductCard from '@/components/ProductCard';
 import { Plus, Receipt, Settings, Download } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { generateManagementReport } from '@/lib/pdfUtils';
 import StepGuide from '@/components/StepGuide';
 
 export default function Dashboard() {
@@ -26,22 +25,6 @@ export default function Dashboard() {
       navigate('/');
     }
   }, [loading, user, navigate]);
-
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-
-  const handleGenerateReport = async () => {
-    if (isGeneratingPDF) return;
-    setIsGeneratingPDF(true);
-    try {
-      // Small delay to allow UI to update to loading state
-      await new Promise(resolve => setTimeout(resolve, 50));
-      generateManagementReport(user!, products, expenses, totalExpenses, totalProjectedProfit, projection);
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
 
   if (loading || !user) {
     return (
@@ -76,19 +59,6 @@ export default function Dashboard() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black text-foreground">¡Hola {user.name.split(' ')[0]}! 👋</h1>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleGenerateReport}
-                  disabled={isGeneratingPDF}
-                  className={`h-8 w-8 text-primary hover:bg-primary/10 ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {isGeneratingPDF ? (
-                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <Download className="h-5 w-5" />
-                  )}
-                </Button>
               </div>
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest opacity-70">{user.businessName}</p>
             </div>
