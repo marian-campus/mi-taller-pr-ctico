@@ -237,7 +237,7 @@ export default function Bolsillo() {
 
               <div className="space-y-4">
                 <div>
-                  <Label className="text-xs font-bold uppercase text-muted-foreground">Sueldo mensual deseado</Label>
+                  <Label className="text-xs font-bold uppercase text-muted-foreground">Sueldo Mensual Aproximado</Label>
                   <Input
                     type="number"
                     value={form.monthlySalary}
@@ -246,7 +246,7 @@ export default function Bolsillo() {
                     placeholder="Ej: 800000"
                   />
                   <p className="text-[11px] text-muted-foreground mt-1 leading-tight">
-                    ¿Cuánto querés ganar por mes? Esto definirá el costo de tu tiempo.
+                    Esto definirá el costo de tu tiempo.
                   </p>
                 </div>
 
@@ -259,7 +259,7 @@ export default function Bolsillo() {
                       onChange={e => updateForm('monthlyWorkingHours', e.target.value)}
                       className="mt-1 h-12 text-lg font-semibold"
                     />
-                    <p className="text-[10px] text-muted-foreground mt-1">Default: 160hs</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">Default: 160hs (40 horas semanales por 4)</p>
                   </div>
                   <div>
                     <Label className="text-xs font-bold uppercase text-muted-foreground">Valor hora (calc.)</Label>
