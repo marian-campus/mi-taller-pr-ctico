@@ -217,7 +217,7 @@ export const dataService = {
             estimatedUnitsPerMonth: Number(p.estimated_units_per_month) || 10,
             active: p.active !== false,
             createdAt: p.created_at,
-            ingredients: (p.ingredients || []).filter((i: any) => !i.is_packaging).map((i: any) => ({
+            ingredients: ((p.ingredients as any[]) || []).filter((i: any) => !i.is_packaging).map((i: any) => ({
                 id: i.id,
                 supplyId: i.supply_id,
                 name: i.supply?.name || i.name || 'Ingrediente',
@@ -225,7 +225,7 @@ export const dataService = {
                 unit: i.unit || 'un',
                 cost: Number(i.cost) || 0
             })),
-            packaging: (p.ingredients || []).filter((i: any) => i.is_packaging).map((i: any) => ({
+            packaging: ((p.ingredients as any[]) || []).filter((i: any) => i.is_packaging).map((i: any) => ({
                 id: i.id,
                 supplyId: i.supply_id,
                 name: i.supply?.name || i.name || 'Envase',
