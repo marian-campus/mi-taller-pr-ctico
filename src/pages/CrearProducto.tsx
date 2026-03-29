@@ -407,11 +407,10 @@ export default function CrearProducto() {
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Torta de Manzana" className="mt-1" />
             </div>
             <div>
-              <Label>Categoría</Label>
-              <select value={category} onChange={e => setCategory(e.target.value)}
-                className="w-full h-10 mt-1 rounded-md border border-input bg-background px-3 text-sm">
-                {productCategories.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
+              <Label>Rubro</Label>
+              <div className="w-full h-12 mt-1 rounded-xl border-2 border-primary/20 bg-primary/5 px-4 flex items-center font-bold text-primary">
+                🍰 Gastronomía
+              </div>
             </div>
             <Button onClick={() => { if (name.trim()) setStep(2); }} disabled={!name.trim()} className="w-full gap-2">
               Siguiente <ArrowRight className="h-4 w-4" />
