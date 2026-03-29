@@ -122,7 +122,7 @@ export default function Bolsillo() {
           <div>
             <Label className="text-sm font-bold text-foreground mb-1.5 block">Breve Descripción de Mi Negocio o Emprendimiento</Label>
             <Textarea 
-              placeholder="Ej: Taller de costura artesanal especializado en accesorios..."
+              placeholder="Ej: Pastelería artesanal especializada en tortas personalizadas y eventos..."
               value={form.businessDescription}
               onChange={e => updateForm('businessDescription', e.target.value)}
               className="min-h-[80px] bg-background/50 focus:bg-background transition-colors"
@@ -131,7 +131,7 @@ export default function Bolsillo() {
           <div>
             <Label className="text-sm font-bold text-foreground mb-1.5 block">Productos principales de Venta</Label>
             <Textarea 
-              placeholder="Ej: Mochilas, cartucheras, bolsos de tela..."
+              placeholder="Ej: Alfajores artesanales, budines, cupcakes y box de desayunos..."
               value={form.mainProducts}
               onChange={e => updateForm('mainProducts', e.target.value)}
               className="min-h-[80px] bg-background/50 focus:bg-background transition-colors"
