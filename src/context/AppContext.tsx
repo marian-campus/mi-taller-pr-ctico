@@ -113,8 +113,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           console.error("❌ Failed to refresh user data:", err);
           setLoading(false); // Ensure loading is off even if error occurs
         }
-      } else if (event === 'SIGNED_OUT') {
-        console.log("👋 Clearing state...");
+      } else if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) {
+        console.log("👋 Clearing state (No session detected or Sign out logic)...");
         setUserState(null);
         setSupplies([]);
         setProducts([]);
@@ -434,6 +434,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       projection, setProjection, updateProjection, totalProjectedProfit,
       loading,
       signOut: async () => {
+        console.log("👋 Manual Sign out triggered, cleaning memory immediately...");
+        // Clear visually immediately for better UX
+        setUserState(null);
+        setSupplies([]);
+        setProducts([]);
+        setExpenses([]);
+        localStorage.clear();
+        
         await supabase.auth.signOut();
       }
     }}>

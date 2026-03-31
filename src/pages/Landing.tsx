@@ -30,22 +30,7 @@ export default function Landing() {
         }
     }, [searchParams, navigate]);
 
-    // 1. Limpiar rastro de sesiones anteriores al montar el login (Solo si no hay sesión real)
-    useEffect(() => {
-        const checkAndClear = async () => {
-            try {
-                const { data } = await supabase.auth.getUser();
-                if (!data.user) {
-                    console.log('No active session found, cleaning up localStorage...');
-                    localStorage.clear();
-                }
-            } catch (e) {
-                console.log('⚠️ Error al verificar sesión en montaje (Landing):', e);
-                // Si falla el getUser, mejor no limpiar el localStorage a lo loco para no romper posibles sesiones reales
-            }
-        };
-        checkAndClear();
-    }, []);
+    // 1. Limpieza de rastro se delega a AppContext para mayor consistencia
 
     // 2. Redirección: Solo si el usuario ya está cargado en el context
     useEffect(() => {
