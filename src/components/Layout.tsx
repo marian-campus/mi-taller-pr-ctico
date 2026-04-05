@@ -1,6 +1,6 @@
 import { ReactNode, useState } from 'react';
 import BottomNav from './BottomNav';
-import { Menu, X, Home, BookOpen, Wallet, DollarSign, User, BarChart3, Calculator, LogOut } from 'lucide-react';
+import { Menu, X, Home, BookOpen, Wallet, DollarSign, User, BarChart3, Calculator, LogOut, CreditCard } from 'lucide-react';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import AIAssistant from './AIAssistant';
@@ -59,6 +59,9 @@ export default function Layout({ children, title }: LayoutProps) {
           <div className="h-px bg-border my-2" />
           <Link to="/perfil" className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
             <User className="h-5 w-5" /> Mi Perfil
+          </Link>
+          <Link to="/suscripcion" className="px-4 py-3 rounded-xl hover:bg-primary/10 text-primary font-bold flex items-center gap-3 mt-1">
+            <CreditCard className="h-5 w-5" /> Suscribirme
           </Link>
         </nav>
         <div className="p-4 pt-4 shrink-0 border-t border-border bg-card">
@@ -137,6 +140,9 @@ export default function Layout({ children, title }: LayoutProps) {
               <div className="h-px bg-border my-2" />
               <Link to="/perfil" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-muted font-medium flex items-center gap-3">
                 <User className="h-5 w-5" /> Mi Perfil
+              </Link>
+              <Link to="/suscripcion" onClick={() => setIsMenuOpen(false)} className="px-4 py-3 rounded-xl hover:bg-primary/10 text-primary font-bold flex items-center gap-3 mt-1">
+                <CreditCard className="h-5 w-5" /> Suscribirme
               </Link>
             </nav>
             
