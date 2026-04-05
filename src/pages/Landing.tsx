@@ -102,7 +102,7 @@ export default function Landing() {
                 {/* Branding Area */}
                 <div className="text-center space-y-3">
                     <div className="mx-auto h-20 w-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-4">
-                        <span className="text-4xl">🛠️</span>
+                        <span className="text-4xl">💻📊</span>
                     </div>
                     <h1 className="text-3xl font-black tracking-tight text-foreground">
                         Mi Taller <span className="text-primary">Contable</span>
