@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { useApp } from '@/context/AppContext';
+import { Monitor, LineChart } from 'lucide-react';
 
 export default function Landing() {
     const navigate = useNavigate();
@@ -101,8 +102,9 @@ export default function Landing() {
             <div className="max-w-md w-full space-y-8 animate-in fade-in zoom-in duration-500">
                 {/* Branding Area */}
                 <div className="text-center space-y-3">
-                    <div className="mx-auto h-20 w-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-4">
-                        <span className="text-4xl">💻📊</span>
+                    <div className="mx-auto h-20 w-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-4 relative">
+                        <Monitor className="w-11 h-11 text-primary absolute" strokeWidth={1.5} />
+                        <LineChart className="w-5 h-5 text-primary absolute -mt-1.5" strokeWidth={2.5} />
                     </div>
                     <h1 className="text-3xl font-black tracking-tight text-foreground">
                         Mi Taller <span className="text-primary">Contable</span>
