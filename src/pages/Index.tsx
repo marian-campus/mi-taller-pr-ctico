@@ -27,7 +27,7 @@ export default function Dashboard() {
   }, [loading, user, navigate]);
 
   const handleNewProductClick = () => {
-    if (products.length >= 5) {
+    if (products.length >= 6) {
       setFreemiumModalOpen(true);
     } else {
       navigate('/recetario/nuevo');

@@ -11,7 +11,7 @@ export default function Recetario() {
   const navigate = useNavigate();
 
   const handleNewProductClick = () => {
-    if (products.length >= 5) {
+    if (products.length >= 6) {
       setFreemiumModalOpen(true);
     } else {
       navigate('/recetario/nuevo');
