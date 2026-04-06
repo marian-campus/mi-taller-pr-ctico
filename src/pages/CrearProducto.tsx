@@ -53,13 +53,21 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 }
 
 export default function CrearProducto() {
-  const { supplies, addSupply, updateSupply, deleteSupply, addProduct, updateProduct, products, user, totalExpenses } = useApp();
+  const { supplies, addSupply, updateSupply, deleteSupply, addProduct, updateProduct, products, user, totalExpenses, setFreemiumModalOpen } = useApp();
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const isViewMode = searchParams.get('view') === 'true';
 
   const existing = id ? products.find(p => p.id === id) : null;
+
+  // Freemium guard: Redirect if trying to create but limit reached
+  useEffect(() => {
+    if (!id && products.length >= 5) {
+      navigate('/recetario', { replace: true });
+      setTimeout(() => setFreemiumModalOpen(true), 100);
+    }
+  }, [id, products.length, navigate, setFreemiumModalOpen]);
 
   const [step, setStep] = useState(isViewMode ? 5 : 1);
 

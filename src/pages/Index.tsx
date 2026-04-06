@@ -15,7 +15,7 @@ export default function Dashboard() {
   const currentMonthName = months[now.getMonth()];
   const currentYear = now.getFullYear();
 
-  const { user, products, expenses, totalExpenses, totalProjectedProfit, projection, loading } = useApp();
+  const { user, products, expenses, totalExpenses, totalProjectedProfit, projection, loading, setFreemiumModalOpen } = useApp();
   const navigate = useNavigate();
 
   // Authentication guard
@@ -25,6 +25,14 @@ export default function Dashboard() {
       navigate('/');
     }
   }, [loading, user, navigate]);
+
+  const handleNewProductClick = () => {
+    if (products.length >= 5) {
+      setFreemiumModalOpen(true);
+    } else {
+      navigate('/recetario/nuevo');
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -91,7 +99,7 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="flex gap-3">
-          <Button onClick={() => navigate('/recetario/nuevo')} className="flex-1 gap-2 h-12 rounded-xl">
+          <Button onClick={handleNewProductClick} className="flex-1 gap-2 h-12 rounded-xl">
             <Plus className="h-4 w-4" /> Nuevo Producto
           </Button>
           <Button variant="cta" onClick={() => navigate('/bolsillo/nuevo')} className="flex-1 gap-2 h-12 rounded-xl">
@@ -106,7 +114,7 @@ export default function Dashboard() {
             <Card className="p-8 text-center rounded-xl">
               <p className="text-3xl mb-2">📦</p>
               <p className="text-muted-foreground mb-3">Aún no creaste productos. ¡Empezá ahora!</p>
-              <Button onClick={() => navigate('/recetario/nuevo')}>+ Nuevo Producto</Button>
+              <Button onClick={handleNewProductClick}>+ Nuevo Producto</Button>
             </Card>
           ) : (
             <div className="space-y-4">

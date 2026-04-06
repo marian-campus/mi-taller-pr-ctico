@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import AIAssistant from './AIAssistant';
 import { useApp } from '@/context/AppContext';
+import FreemiumModal from './FreemiumModal';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +36,7 @@ export default function Layout({ children, title }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 md:pl-64">
+      <FreemiumModal />
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 bg-card border-r border-border z-30">
         <div className="flex items-center gap-2 px-6 py-4 border-b border-border/50 shrink-0">

@@ -28,6 +28,8 @@ interface AppContextType {
   totalProjectedProfit: number;
   loading: boolean;
   signOut: () => Promise<void>;
+  isFreemiumModalOpen: boolean;
+  setFreemiumModalOpen: (open: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -39,6 +41,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [supplies, setSupplies] = useState<Supply[]>([]);
   const [projection, setProjection] = useState<Record<string, { enabled: boolean; qty: string }>>({});
   const [loading, setLoading] = useState(true);
+  const [isFreemiumModalOpen, setFreemiumModalOpen] = useState(false);
   const isSyncing = React.useRef(false);
 
   // 1. Initial Data Fetch (Local-First & Silent Sync)
@@ -459,6 +462,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       totalExpenses,
       projection, setProjection, updateProjection, totalProjectedProfit,
       loading,
+      isFreemiumModalOpen, setFreemiumModalOpen,
       signOut: async () => {
         console.log("👋 Manual Sign out triggered, cleaning memory immediately...");
         // Clear visually immediately for better UX
