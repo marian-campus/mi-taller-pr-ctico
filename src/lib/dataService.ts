@@ -91,9 +91,9 @@ export const dataService = {
                 console.error('❌ Minimal profile creation also failed:', minError.message, minError.code);
                 throw minError;
             }
-            return minData ? minData[0] : null;
+            return minData && minData[0] ? this.mapProfile(minData[0]) : null;
         }
-        return data ? data[0] : null;
+        return data && data[0] ? this.mapProfile(data[0]) : null;
     },
 
     async updateProfile(userId: string, profile: Partial<UserSettings>) {

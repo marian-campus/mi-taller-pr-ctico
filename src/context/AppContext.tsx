@@ -171,7 +171,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               id: authUser.id,
               name: authUser.user_metadata?.first_name || authUser.email?.split('@')[0] || 'Usuario',
               businessName: 'Mi Negocio',
-              businessCategory: 'Gastronomía',
+              businessCategory: 'gastronomia',
               startDate: new Date().toISOString().split('T')[0],
               location: '',
               hourlyRate: 0,
@@ -182,12 +182,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
               language: 'es',
               businessDescription: '',
               mainProducts: ''
-            });
+            } as UserSettings & { id: string });
             console.log("✅ Profile created successfully.");
           } catch (healError) {
             console.error("❌ Failed to create profile:", healError);
           }
         }
+      }
+
+      // --- FALLBACK METADATA ---
+      // Si por fallo de red o RLS no se pudo traer ni crear el perfil de BD, armamos uno en memoria para evitar loop de logout.
+      if (!profile) {
+         const { data: { user: authUser } } = await supabase.auth.getUser();
+         if (authUser) {
+             console.warn("⚠️ Using fallback profile in memory to prevent logout loop");
+             profile = {
+                  id: authUser.id,
+                  name: authUser.user_metadata?.first_name || authUser.email?.split('@')[0] || 'Usuario',
+                  businessName: 'Mi Negocio',
+                  businessCategory: 'gastronomia',
+                  startDate: new Date().toISOString().split('T')[0],
+                  location: '',
+                  hourlyRate: 0,
+                  monthlySalary: 0,
+                  monthlyWorkingHours: 0,
+                  country: '',
+                  currencySymbol: '$',
+                  language: 'es',
+                  logoUrl: '',
+                  businessDescription: '',
+                  mainProducts: ''
+             } as UserSettings;
+         }
       }
 
       if (profile) {

@@ -176,7 +176,7 @@ export default function AIAssistant() {
                                     )}
                                 </div>
                                 <div
-                                    className={`rounded-lg px-3 py-2 text-sm ${message.role === 'assistant'
+                                    className={`rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${message.role === 'assistant'
                                             ? 'bg-muted max-w-[85%]'
                                             : 'bg-primary text-primary-foreground max-w-[85%]'
                                         }`}
