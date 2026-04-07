@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import CategoryIcon from '@/components/CategoryIcon';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { Plus, Pencil, Trash2, Calculator, ChevronRight, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calculator, ChevronRight, Save, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -336,6 +336,14 @@ export default function Bolsillo() {
 
           <Button onClick={handleSaveConfig} className="w-full h-16 text-lg font-black shadow-xl shadow-primary/20 gap-2 mt-6">
               <Save className="h-6 w-6" /> Guardar Configuración de Costos
+            </Button>
+
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/recetario')} 
+              className="w-full h-14 text-base font-bold gap-2 mt-3 border-primary/30 text-primary hover:bg-primary/5 mb-8"
+            >
+              <BookOpen className="h-5 w-5" /> Ir a Mis Costos
             </Button>
           </div>
 
