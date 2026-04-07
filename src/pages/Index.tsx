@@ -15,7 +15,7 @@ export default function Dashboard() {
   const currentMonthName = months[now.getMonth()];
   const currentYear = now.getFullYear();
 
-  const { user, products, expenses, totalExpenses, totalProjectedProfit, projection, loading, setFreemiumModalOpen } = useApp();
+  const { user, products, expenses, totalMonthExpenses, totalProjectedProfit, loading, setFreemiumModalOpen } = useApp();
   const navigate = useNavigate();
 
   // Authentication guard
@@ -87,11 +87,11 @@ export default function Dashboard() {
               <p className="text-[10px] opacity-80 uppercase font-bold leading-tight">Productos<br />activos</p>
             </div>
             <div className="space-y-1 border-l border-white/20 pl-4">
-              <p className="text-2xl font-black">{formatCurrency(totalExpenses, user?.currencySymbol)}</p>
+              <p className="text-2xl font-black">{formatCurrency(totalMonthExpenses, user?.currencySymbol)}</p>
               <p className="text-[10px] opacity-80 uppercase font-bold leading-tight">Gastos de<br />este mes</p>
             </div>
             <div className="space-y-1 border-l border-white/20 pl-4">
-              <p className="text-2xl font-black">{formatCurrency(totalProjectedProfit - totalExpenses, user?.currencySymbol)}</p>
+              <p className="text-2xl font-black">{formatCurrency(totalProjectedProfit - totalMonthExpenses, user?.currencySymbol)}</p>
               <p className="text-[10px] opacity-80 uppercase font-bold leading-tight text-cta-foreground">Ganancia<br />Neta</p>
             </div>
           </div>

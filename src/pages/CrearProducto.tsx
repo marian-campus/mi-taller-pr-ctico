@@ -9,10 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { RecipeIngredient, Product, Supply } from '@/types';
-import { ArrowLeft, ArrowRight, Plus, X, Search, Check, Trash2, Clock, Package, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, X, Search, Check, Trash2, Clock, Package, DollarSign, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { categoryEmojis } from '@/components/CategoryIcon';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -53,7 +59,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
 }
 
 export default function CrearProducto() {
-  const { supplies, addSupply, updateSupply, deleteSupply, addProduct, updateProduct, products, user, totalExpenses, setFreemiumModalOpen } = useApp();
+  const { supplies, addSupply, updateSupply, deleteSupply, addProduct, updateProduct, products, user, totalExpenses, totalFixedExpenses, setFreemiumModalOpen } = useApp();
   const navigate = useNavigate();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
@@ -155,9 +161,9 @@ export default function CrearProducto() {
   const laborTimeHrs = labHours + labMinutes / 60;
   const labCost = laborTimeHrs * (user?.hourlyRate || 0);
 
-  // Fixed Proportional Cost
+  // Fixed Proportional Cost (Corrected Audit: Only uses current month's included fixed costs)
   const userHours = user?.monthlyWorkingHours || 0;
-  const hourlyFixedRate = userHours > 0 ? totalExpenses / userHours : 0;
+  const hourlyFixedRate = userHours > 0 ? totalFixedExpenses / userHours : 0;
   const fixedPU = includeFixed ? Math.round(hourlyFixedRate * laborTimeHrs) : 0;
 
   const totalCost = Math.round(ingCost + packCost + labCost + fixedPU);
@@ -615,7 +621,24 @@ export default function CrearProducto() {
                     <span className="font-medium">{formatCurrency(hourlyFixedRate, user.currencySymbol)}/h</span>
                   </div>
                   <div className="flex justify-between text-sm items-center border-t pt-2">
-                    <span className="font-semibold">Costo Fijo Proporcional</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold">Costo Fijo Proporcional</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="cursor-help text-muted-foreground/60 hover:text-primary transition-colors">
+                              <Info className="h-3 w-3" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-[240px] p-3 text-xs leading-relaxed">
+                            <p>Este valor se calcula mediante la fórmula:</p>
+                            <p className="mt-1 font-bold text-primary">
+                              ({formatCurrency(totalFixedExpenses, user.currencySymbol)} / {userHours}h) × {laborTimeHrs.toFixed(2)}h
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <span className="text-primary font-bold text-lg">{formatCurrency(fixedPU, user.currencySymbol)}</span>
                   </div>
                   <p className="text-[10px] text-muted-foreground leading-tight italic">
@@ -890,7 +913,27 @@ export default function CrearProducto() {
                   <div className="flex items-center justify-between p-3 rounded-2xl bg-accent/30 border border-accent/20">
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Costo Fijo Proporcional</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-medium">Costo Fijo Proporcional</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="cursor-help text-muted-foreground/60 hover:text-primary transition-colors">
+                                <Info className="h-3.5 w-3.5" />
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-[240px] p-3 text-xs leading-relaxed">
+                              <p>Este valor se calcula mediante la fórmula:</p>
+                              <p className="mt-1 font-bold text-primary">
+                                ({formatCurrency(totalFixedExpenses, user.currencySymbol)} / {userHours}h) × {laborTimeHrs.toFixed(2)}h
+                              </p>
+                              <p className="mt-1 opacity-80">
+                                Es decir: (Gastos Mensuales / Horas de Trabajo) × Tiempo de esta receta.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
                     </div>
                     <span className="font-bold">{formatCurrency(fixedPU, user.currencySymbol)}</span>
                   </div>

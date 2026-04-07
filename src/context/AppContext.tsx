@@ -22,6 +22,8 @@ interface AppContextType {
   updateSupply: (s: Supply) => Promise<void>;
   deleteSupply: (id: string) => Promise<void>;
   totalExpenses: number;
+  totalFixedExpenses: number;
+  totalMonthExpenses: number;
   projection: Record<string, { enabled: boolean; qty: string }>;
   setProjection: (p: Record<string, { enabled: boolean; qty: string }>) => void;
   updateProjection: (id: string, field: 'enabled' | 'qty', value: any) => void;
@@ -435,6 +437,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
     , [expenses]);
 
+  const totalFixedExpenses = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    return expenses
+      .filter(e => {
+        const d = new Date(e.date + 'T12:00:00'); // Use midday to avoid timezone shifts
+        return d.getMonth() === currentMonth && 
+               d.getFullYear() === currentYear && 
+               e.includedInFixedCosts !== false;
+      })
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [expenses]);
+
+  const totalMonthExpenses = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    return expenses
+      .filter(e => {
+        const d = new Date(e.date + 'T12:00:00');
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      })
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+  }, [expenses]);
+
   const updateProjection = (id: string, field: 'enabled' | 'qty', value: any) => {
     setProjection(prev => ({
       ...prev,
@@ -459,7 +489,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       products, addProduct, updateProduct, deleteProduct, toggleProductActive,
       expenses, addExpense, updateExpense, deleteExpense,
       supplies, addSupply, updateSupply, deleteSupply,
-      totalExpenses,
+      totalExpenses, totalFixedExpenses, totalMonthExpenses,
       projection, setProjection, updateProjection, totalProjectedProfit,
       loading,
       isFreemiumModalOpen, setFreemiumModalOpen,
