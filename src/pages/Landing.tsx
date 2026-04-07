@@ -72,22 +72,21 @@ export default function Landing() {
             });
 
             if (error) throw error;
-
+            
             console.log("✅ Supabase signIn successful:", data.user?.id);
             toast.success('¡Bienvenido de nuevo!');
+            
+            // Unlock component loading regardless of redirect progress
+            setLoading(false);
 
-            // Si por alguna razón el AppContext no reacciona al evento SIGNED_IN
-            // forzamos una verificación manual después de 2 segundos
+            // Fast redirect backup if AppContext hasn't reacted yet
             setTimeout(async () => {
-                if (loading) {
-                    console.log("🔍 Manual session check after delay...");
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session) {
-                        console.log("🎉 Session found manually, forcing redirect.");
-                        navigate('/dashboard');
-                    }
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    console.log("🎉 Fast manual redirect triggered.");
+                    navigate('/dashboard');
                 }
-            }, 3000);
+            }, 1000);
 
         } catch (error) {
             const err = error as Error;
