@@ -20,7 +20,8 @@ const COLORS = ['#00A86B', '#FF6B35', '#4A90D9', '#E74C3C', '#9B59B6', '#F1C40F'
 const categoryLabels: Record<string, string> = {
   transporte: 'Transporte', publicidad: 'Publicidad', alquiler: 'Alquiler',
   servicios: 'Servicios', limpieza: 'Limpieza', capacitacion: 'Capacitación',
-  comisiones: 'Comisiones', tramites: 'Trámites', muestras: 'Muestras', otros: 'Otros',
+  comisiones: 'Comisiones', tramites: 'Trámites', muestras: 'Muestras',
+  impuestos: 'Impuestos', otros: 'Otros',
 };
 
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];

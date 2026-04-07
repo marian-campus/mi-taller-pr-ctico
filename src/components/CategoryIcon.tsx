@@ -13,6 +13,7 @@ const categoryEmojis: Record<string, string> = {
   comisiones: '🏦',
   tramites: '📄',
   muestras: '🎁',
+  impuestos: '💸',
   packaging: '📦',
 };
 

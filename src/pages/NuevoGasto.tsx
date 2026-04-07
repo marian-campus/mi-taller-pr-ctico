@@ -19,6 +19,7 @@ const categories = [
   { value: 'comisiones', label: '🏦 Comisiones Bancarias' },
   { value: 'tramites', label: '📄 Trámites' },
   { value: 'muestras', label: '🎁 Muestras' },
+  { value: 'impuestos', label: '💸 Impuestos y Tasas' },
   { value: 'otros', label: '📦 Otros' },
 ];
 
