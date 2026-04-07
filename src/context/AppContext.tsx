@@ -67,9 +67,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (localProducts) setProducts(JSON.parse(localProducts));
         if (localExpenses) setExpenses(JSON.parse(localExpenses));
 
-        // Unlock the UI immediately if we have at least the user profile
+        // Unlock the UI immediately if we have local data
         if (localUser) {
-          console.log("📱 Local profile found, unlocking UI...");
+          console.log("📱 Local profile found, unlocking UI early...");
           setLoading(false);
         }
 
@@ -77,26 +77,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         const hasCredentials = !!import.meta.env.VITE_SUPABASE_URL && !!import.meta.env.VITE_SUPABASE_ANON_KEY;
         if (hasCredentials) {
           try {
-            // Check session with a short timeout
+            // Short timeout for session check to avoid hanging
             const { data: { user: authUser } } = await Promise.race([
               supabase.auth.getUser(),
-              new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Timeout checking session')), 5000))
+              new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Timeout checking session')), 4000))
             ]);
 
             if (authUser) {
               await refreshUserData(authUser.id);
-            } else {
-              setLoading(false);
             }
           } catch (syncError) {
-            console.log("📡 Offline/Slow mode or session check timeout. Postponing sync.");
-            setLoading(false);
+            console.log("📡 Offline mode or session check timeout. Proceeding with local data.");
           }
-        } else {
-          setLoading(false);
         }
       } catch (err) {
         console.error("❌ Critical error in initData:", err);
+      } finally {
+        // ALWAYS ensure loading is off after sync attempt
         setLoading(false);
       }
     }
@@ -108,15 +105,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.log(`🔐 Auth Event: ${event}`, session?.user?.email);
 
       if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-        // Only set loading to true if we don't have user data yet
-        if (!user) setLoading(true);
+        // Only set loading to true if we don't have user data yet in state
+        const hasLocalData = !!localStorage.getItem('user_settings');
+        if (!hasLocalData) setLoading(true);
 
         console.log("🔄 refreshing data in background...");
         try {
           await refreshUserData(session.user.id);
         } catch (err) {
           console.error("❌ Failed to refresh user data:", err);
-          setLoading(false); // Ensure loading is off even if error occurs
+        } finally {
+          setLoading(false); // ALWAYS release loading state
         }
       } else if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) {
         console.log("👋 Clearing state (No session detected or Sign out logic)...");
@@ -144,10 +143,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       console.log("☁️ START sync with cloud for:", userId);
 
-      const fetchWithTimeout = async (promise: Promise<any>, name: string) => {
+      const fetchWithTimeout = async (promise: Promise<any>, name: string, timeoutMs: number = 8000) => {
         return Promise.race([
           promise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout fetching ${name}`)), 15000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout fetching ${name}`)), timeoutMs))
         ]);
       };
 
@@ -168,57 +167,51 @@ export function AppProvider({ children }: { children: ReactNode }) {
       
       // --- SELF-HEALING: Crear perfil si no existe ---
       if (isProfileMissing && !profile) {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (authUser) {
-          try {
-            console.log("🛠️ Creating default profile for:", authUser.email);
-            profile = await dataService.createProfile({
-              id: authUser.id,
-              name: authUser.user_metadata?.first_name || authUser.email?.split('@')[0] || 'Usuario',
-              businessName: 'Mi Negocio',
-              businessCategory: 'gastronomia',
-              startDate: new Date().toISOString().split('T')[0],
-              location: '',
-              hourlyRate: 0,
-              monthlySalary: 0,
-              monthlyWorkingHours: 0,
-              country: '',
-              currencySymbol: '$',
-              language: 'es',
-              businessDescription: '',
-              mainProducts: ''
-            } as UserSettings & { id: string });
-            console.log("✅ Profile created successfully.");
-          } catch (healError) {
-            console.error("❌ Failed to create profile:", healError);
-          }
+        try {
+          console.log("🛠️ Creating minimal fallback profile for:", userId);
+          profile = await dataService.createProfile({
+            id: userId,
+            name: 'Usuario',
+            businessName: 'Mi Negocio',
+            businessCategory: 'gastronomia',
+            startDate: new Date().toISOString().split('T')[0],
+            location: '',
+            hourlyRate: 0,
+            monthlySalary: 0,
+            monthlyWorkingHours: 0,
+            country: '',
+            currencySymbol: '$',
+            language: 'es',
+            businessDescription: '',
+            mainProducts: ''
+          } as UserSettings & { id: string });
+          console.log("✅ Profile created/upserted successfully.");
+        } catch (healError) {
+          console.error("❌ Failed to create profile:", healError);
         }
       }
 
-      // --- FALLBACK METADATA ---
-      // Si por fallo de red o RLS no se pudo traer ni crear el perfil de BD, armamos uno en memoria para evitar loop de logout.
+      // --- CRITICAL FALLBACK ---
+      // Si todo falla (timeout o error), NO dejamos al usuario afuera. Usamos uno en memoria.
       if (!profile) {
-         const { data: { user: authUser } } = await supabase.auth.getUser();
-         if (authUser) {
-             console.warn("⚠️ Using fallback profile in memory to prevent logout loop");
-             profile = {
-                  id: authUser.id,
-                  name: authUser.user_metadata?.first_name || authUser.email?.split('@')[0] || 'Usuario',
-                  businessName: 'Mi Negocio',
-                  businessCategory: 'gastronomia',
-                  startDate: new Date().toISOString().split('T')[0],
-                  location: '',
-                  hourlyRate: 0,
-                  monthlySalary: 0,
-                  monthlyWorkingHours: 0,
-                  country: '',
-                  currencySymbol: '$',
-                  language: 'es',
-                  logoUrl: '',
-                  businessDescription: '',
-                  mainProducts: ''
-             } as UserSettings;
-         }
+          console.warn("⚠️ Using emergency fallback profile in memory to unlock UI");
+          profile = {
+                id: userId,
+                name: 'Usuario',
+                businessName: 'Mi Negocio',
+                businessCategory: 'gastronomia',
+                startDate: new Date().toISOString().split('T')[0],
+                location: '',
+                hourlyRate: 0,
+                monthlySalary: 0,
+                monthlyWorkingHours: 0,
+                country: '',
+                currencySymbol: '$',
+                language: 'es',
+                logoUrl: '',
+                businessDescription: '',
+                mainProducts: ''
+          } as UserSettings;
       }
 
       if (profile) {
@@ -226,11 +219,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('user_settings', JSON.stringify(profile));
       }
 
-      // Parallel fetch of other user data (even if profile timed out, we still try getting products)
+      // Parallel fetch of other user data (5s timeout for speed)
       const [supps, prods, exps] = await Promise.all([
-        fetchWithTimeout(dataService.getSupplies(userId), "supplies").catch(e => { console.error("Error fetching supplies:", e); return null; }),
-        fetchWithTimeout(dataService.getProducts(userId), "products").catch(e => { console.error("Error fetching products:", e); return null; }),
-        fetchWithTimeout(dataService.getExpenses(userId), "expenses").catch(e => { console.error("Error fetching expenses:", e); return null; })
+        fetchWithTimeout(dataService.getSupplies(userId), "supplies", 5000).catch(e => { console.error("Error supplies:", e); return null; }),
+        fetchWithTimeout(dataService.getProducts(userId), "products", 5000).catch(e => { console.error("Error products:", e); return null; }),
+        fetchWithTimeout(dataService.getExpenses(userId), "expenses", 5000).catch(e => { console.error("Error expenses:", e); return null; })
       ]);
 
       if (supps) {
@@ -502,7 +495,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setExpenses([]);
         localStorage.clear();
         
-        await supabase.auth.signOut();
+        // Non-blocking sign out
+        supabase.auth.signOut().catch(e => console.error("Error signing out from Supabase:", e));
       }
     }}>
       {children}

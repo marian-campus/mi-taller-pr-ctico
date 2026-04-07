@@ -30,7 +30,8 @@ export default function Layout({ children, title }: LayoutProps) {
 
   const handleLogout = async () => {
     setIsMenuOpen(false);
-    await signOut();
+    // Non-blocking call, redirect immediately
+    signOut();
     navigate('/?logout=true');
   };
 
