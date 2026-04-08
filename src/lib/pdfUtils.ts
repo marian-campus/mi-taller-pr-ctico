@@ -4,7 +4,7 @@ import { saveAs } from 'file-saver';
 import { formatCurrency } from './format';
 import { Product, Expense, UserSettings } from '@/types';
 
-export const generateManagementReport = (
+export const generateManagementReport = async (
     user: UserSettings,
     products: Product[],
     expenses: Expense[],
@@ -129,7 +129,22 @@ export const generateManagementReport = (
     doc.setTextColor(120, 120, 120);
     doc.text('* Calculado sobre el precio de venta sugerido menos costos totales (insumos, mano de obra y costos indirectos).', 14, finalY3 + 38);
 
-    // Use file-saver for robust downloads on mobile devices
-    const blob = doc.output('blob');
-    saveAs(blob, `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`);
+    const fileName = `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`;
+    
+    // Use doc.save() which is the standard way for jsPDF to handle downloads
+    // It has better internal fallbacks for different environments
+    try {
+        doc.save(fileName);
+    } catch (error) {
+        console.error("Error saving PDF with doc.save, trying fallback:", error);
+        // Fallback for some mobile browsers (like Samsung Internet) that might block direct blob downloads
+        try {
+            const blob = doc.output('blob');
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        } catch (fallbackError) {
+            console.error("Fallback also failed:", fallbackError);
+            alert("No se pudo descargar el archivo. Por favor, intente desde un navegador diferente.");
+        }
+    }
 };

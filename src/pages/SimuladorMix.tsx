@@ -72,8 +72,7 @@ export default function SimuladorMix() {
         if (isGeneratingPDF || !user) return;
         setIsGeneratingPDF(true);
         try {
-            await new Promise(resolve => setTimeout(resolve, 50));
-            generateManagementReport(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
+            await generateManagementReport(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
             toast.success('Reporte generado correctamente');
         } catch (error) {
             console.error("Error generating PDF:", error);
