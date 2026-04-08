@@ -445,73 +445,84 @@ export default function CrearProducto() {
             <div className="max-h-48 overflow-y-auto space-y-1 rounded-lg">
               {filteredSupplies.map(s => {
                 return (
-                  <div key={s.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                  <div key={s.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2 p-3 sm:p-2 rounded-lg bg-muted/50 border border-primary/5 shadow-sm">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{s.name}</p>
+                      <p className="text-sm font-bold sm:font-medium truncate">{s.name}</p>
                       {editingSupplyId === s.id ? (
-                        <div className="flex items-center gap-1 mt-1">
-                          <span className="text-xs text-muted-foreground">$</span>
-                          <Input
-                            type="number"
-                            className="h-6 w-16 text-xs px-1"
-                            value={tempPP}
-                            onChange={e => setTempPP(e.target.value)}
-                            onKeyDown={e => handleDetailKeyDown(e, s)}
-                            autoFocus
-                          />
-                          <span className="text-xs text-muted-foreground">/</span>
-                          <Input
-                            type="number"
-                            className="h-6 w-10 text-xs px-1"
-                            value={tempQB}
-                            onChange={e => setTempQB(e.target.value)}
-                            onKeyDown={e => handleDetailKeyDown(e, s)}
-                          />
-                          <span className="text-xs text-muted-foreground mr-1">{s.unit}</span>
-                          <button onClick={() => handleSupplyDetailBlur(s)} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded" title="Guardar">
-                            <Check className="h-3.5 w-3.5" />
-                          </button>
-                          <button onClick={() => setEditingSupplyId(null)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Cancelar">
-                            <X className="h-3.5 w-3.5" />
-                          </button>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-1 mt-2 sm:mt-1">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              className="h-8 sm:h-6 w-20 sm:w-16 text-sm sm:text-xs px-1"
+                              value={tempPP}
+                              onChange={e => setTempPP(e.target.value)}
+                              onKeyDown={e => handleDetailKeyDown(e, s)}
+                              autoFocus
+                            />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-muted-foreground">/</span>
+                            <Input
+                              type="number"
+                              className="h-8 sm:h-6 w-14 sm:w-10 text-sm sm:text-xs px-1"
+                              value={tempQB}
+                              onChange={e => setTempQB(e.target.value)}
+                              onKeyDown={e => handleDetailKeyDown(e, s)}
+                            />
+                            <span className="text-xs text-muted-foreground mr-1">{s.unit}</span>
+                          </div>
+                          <div className="flex gap-2 sm:gap-1">
+                            <button onClick={() => handleSupplyDetailBlur(s)} className="p-2 sm:p-1 text-emerald-600 hover:bg-emerald-50 rounded-lg border border-emerald-100 sm:border-0" title="Guardar">
+                              <Check className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                            </button>
+                            <button onClick={() => setEditingSupplyId(null)} className="p-2 sm:p-1 text-muted-foreground hover:bg-muted rounded-lg border border-border sm:border-0" title="Cancelar">
+                              <X className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                            </button>
+                          </div>
                         </div>
                       ) : (
-                        <p
-                          className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
+                        <div
+                          className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors flex flex-wrap items-center gap-1 mt-1"
                           onClick={() => {
                             setEditingSupplyId(s.id);
                             setTempPP(s.pricePaid.toString());
                             setTempQB(s.quantityBought.toString());
                           }}
                         >
-                          {formatCurrency(s.pricePaid, user.currencySymbol)} / {s.quantityBought} {s.unit}
-                          <span className="text-xs font-bold text-primary ml-1">({formatCurrency(s.pricePerUnit, user.currencySymbol)} c/u)</span>
-                          <span className="text-[10px] bg-muted px-1 rounded opacity-50">editar</span>
-                        </p>
+                          <span>{formatCurrency(s.pricePaid, user.currencySymbol)} / {s.quantityBought} {s.unit}</span>
+                          <span className="font-bold text-primary">({formatCurrency(s.pricePerUnit, user.currencySymbol)} c/u)</span>
+                          <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded opacity-70 border border-border/50">editar</span>
+                        </div>
                       )}
                     </div>
-                    <Input type="number" placeholder="Cant." className="w-16 h-8 text-sm"
-                      value={qtyInputs[s.id] || ''}
-                      onChange={e => setQtyInputs(prev => ({ ...prev, [s.id]: e.target.value }))}
-                      min="0" step="any" />
+                    
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 sm:flex-none flex items-center gap-1.5">
+                        <Input type="number" placeholder="Cant." className="w-20 sm:w-16 h-10 sm:h-8 text-base sm:text-sm"
+                          value={qtyInputs[s.id] || ''}
+                          onChange={e => setQtyInputs(prev => ({ ...prev, [s.id]: e.target.value }))}
+                          min="0" step="any" />
 
-                    <select
-                      value={selectedUnits[s.id] || s.unit}
-                      onChange={e => setSelectedUnits(prev => ({ ...prev, [s.id]: e.target.value }))}
-                      className="h-8 rounded-md border border-input bg-background px-1 text-xs w-16"
-                    >
-                      {unitOptions.filter(u => getBaseUnit(u) === getBaseUnit(s.unit)).map(u => (
-                        <option key={u} value={u}>{u}</option>
-                      ))}
-                    </select>
+                        <select
+                          value={selectedUnits[s.id] || s.unit}
+                          onChange={e => setSelectedUnits(prev => ({ ...prev, [s.id]: e.target.value }))}
+                          className="h-10 sm:h-8 rounded-md border border-input bg-background px-2 sm:px-1 text-sm sm:text-xs w-24 sm:w-16"
+                        >
+                          {unitOptions.filter(u => getBaseUnit(u) === getBaseUnit(s.unit)).map(u => (
+                            <option key={u} value={u}>{u}</option>
+                          ))}
+                        </select>
+                      </div>
 
-                    <div className="flex gap-1.5 border-l pl-2 ml-1">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteSupply(s.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button size="sm" variant="outline" className="h-8 w-8 p-0 shrink-0" onClick={() => addIng(s, 'ingredients')}>
-                        <Plus className="h-3 w-3" />
-                      </Button>
+                      <div className="flex gap-2 sm:gap-1.5 border-l pl-2 ml-1">
+                        <Button size="sm" variant="ghost" className="h-10 w-10 sm:h-8 sm:w-8 p-0 text-muted-foreground hover:text-destructive group" onClick={() => handleDeleteSupply(s.id)}>
+                          <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-10 w-10 sm:h-8 sm:w-8 p-0 shrink-0 bg-primary/5 border-primary/20 hover:bg-primary/10" onClick={() => addIng(s, 'ingredients')}>
+                          <Plus className="h-4 w-4 sm:h-3 sm:w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -558,22 +569,31 @@ export default function CrearProducto() {
                 <h3 className="text-sm font-semibold mb-2">📦 Insumos</h3>
                 <div className="space-y-1">
                   {ingredients.map(ing => (
-                    <div key={ing.id} className="flex items-center gap-2 py-1.5 border-b border-border last:border-0">
-                      <span className="text-sm flex-1 truncate">{ing.name}</span>
-                      <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          value={ing._rawQty !== undefined ? ing._rawQty : ing.quantityUsed}
-                          onChange={e => updateItemQty(ing.id, e.target.value, 'ingredients')}
-                          className="w-16 h-7 text-xs px-1 text-center"
-                          step="any"
-                        />
-                        <span className="text-[10px] text-muted-foreground">{ing.unit}</span>
+                    <div key={ing.id} className="flex flex-col sm:flex-row sm:items-center gap-2 py-3 sm:py-1.5 border-b border-border last:border-0">
+                      <div className="flex items-center justify-between sm:flex-1 gap-2 min-w-0">
+                        <span className="text-sm font-medium sm:font-normal truncate">{ing.name}</span>
+                        <button onClick={() => setIngredients(prev => prev.filter(i => i.id !== ing.id))} className="text-destructive sm:hidden p-1">
+                          <X className="h-5 w-5" />
+                        </button>
                       </div>
-                      <span className="text-sm font-medium whitespace-nowrap w-20 text-right">{formatCurrency(ing.cost, user.currencySymbol)}</span>
-                      <button onClick={() => setIngredients(prev => prev.filter(i => i.id !== ing.id))} className="text-destructive shrink-0">
-                        <X className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={ing._rawQty !== undefined ? ing._rawQty : ing.quantityUsed}
+                            onChange={e => updateItemQty(ing.id, e.target.value, 'ingredients')}
+                            className="w-20 sm:w-16 h-10 sm:h-7 text-base sm:text-xs px-1 text-center font-bold sm:font-normal"
+                            step="any"
+                          />
+                          <span className="text-xs sm:text-[10px] text-muted-foreground w-8">{ing.unit}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm sm:font-medium whitespace-nowrap w-24 sm:w-20 text-right font-bold text-primary sm:text-foreground">{formatCurrency(ing.cost, user.currencySymbol)}</span>
+                          <button onClick={() => setIngredients(prev => prev.filter(i => i.id !== ing.id))} className="hidden sm:block text-destructive shrink-0 hover:bg-destructive/10 p-1 rounded-md transition-colors">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -668,73 +688,84 @@ export default function CrearProducto() {
                   <div className="max-h-32 overflow-y-auto space-y-1">
                     {filteredPack.map(s => {
                       return (
-                        <div key={s.id} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                        <div key={s.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-2 p-3 sm:p-2 rounded-lg bg-muted/50 border border-primary/5 shadow-sm">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{s.name}</p>
+                            <p className="text-sm font-bold sm:font-medium truncate">{s.name}</p>
                             {editingSupplyId === s.id ? (
-                              <div className="flex items-center gap-1 mt-1">
-                                <span className="text-xs text-muted-foreground">$</span>
-                                <Input
-                                  type="number"
-                                  className="h-6 w-16 text-xs px-1"
-                                  value={tempPP}
-                                  onChange={e => setTempPP(e.target.value)}
-                                  onKeyDown={e => handleDetailKeyDown(e, s)}
-                                  autoFocus
-                                />
-                                <span className="text-xs text-muted-foreground">/</span>
-                                <Input
-                                  type="number"
-                                  className="h-6 w-10 text-xs px-1"
-                                  value={tempQB}
-                                  onChange={e => setTempQB(e.target.value)}
-                                  onKeyDown={e => handleDetailKeyDown(e, s)}
-                                />
-                                <span className="text-xs text-muted-foreground mr-1">{s.unit}</span>
-                                <button onClick={() => handleSupplyDetailBlur(s)} className="p-1 text-emerald-500 hover:bg-emerald-50 rounded" title="Guardar">
-                                  <Check className="h-3.5 w-3.5" />
-                                </button>
-                                <button onClick={() => setEditingSupplyId(null)} className="p-1 text-muted-foreground hover:bg-muted rounded" title="Cancelar">
-                                  <X className="h-3.5 w-3.5" />
-                                </button>
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-1 mt-2 sm:mt-1">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-muted-foreground">$</span>
+                                  <Input
+                                    type="number"
+                                    className="h-8 sm:h-6 w-20 sm:w-16 text-sm sm:text-xs px-1"
+                                    value={tempPP}
+                                    onChange={e => setTempPP(e.target.value)}
+                                    onKeyDown={e => handleDetailKeyDown(e, s)}
+                                    autoFocus
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-xs text-muted-foreground">/</span>
+                                  <Input
+                                    type="number"
+                                    className="h-8 sm:h-6 w-14 sm:w-10 text-sm sm:text-xs px-1"
+                                    value={tempQB}
+                                    onChange={e => setTempQB(e.target.value)}
+                                    onKeyDown={e => handleDetailKeyDown(e, s)}
+                                  />
+                                  <span className="text-xs text-muted-foreground mr-1">{s.unit}</span>
+                                </div>
+                                <div className="flex gap-2 sm:gap-1">
+                                  <button onClick={() => handleSupplyDetailBlur(s)} className="p-2 sm:p-1 text-emerald-600 hover:bg-emerald-50 rounded-lg border border-emerald-100 sm:border-0" title="Guardar">
+                                    <Check className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                                  </button>
+                                  <button onClick={() => setEditingSupplyId(null)} className="p-2 sm:p-1 text-muted-foreground hover:bg-muted rounded-lg border border-border sm:border-0" title="Cancelar">
+                                    <X className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                                  </button>
+                                </div>
                               </div>
                             ) : (
-                              <p
-                                className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors flex items-center gap-1"
+                              <div
+                                className="text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors flex flex-wrap items-center gap-1 mt-1"
                                 onClick={() => {
                                   setEditingSupplyId(s.id);
                                   setTempPP(s.pricePaid.toString());
                                   setTempQB(s.quantityBought.toString());
                                 }}
                               >
-                                {formatCurrency(s.pricePaid, user.currencySymbol)} / {s.quantityBought} {s.unit}
-                                <span className="text-xs font-bold text-primary ml-1">({formatCurrency(s.pricePerUnit, user.currencySymbol)} c/u)</span>
-                                <span className="text-[10px] bg-muted px-1 rounded opacity-50">editar</span>
-                              </p>
+                                <span>{formatCurrency(s.pricePaid, user.currencySymbol)} / {s.quantityBought} {s.unit}</span>
+                                <span className="font-bold text-primary">({formatCurrency(s.pricePerUnit, user.currencySymbol)} c/u)</span>
+                                <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded opacity-70 border border-border/50">editar</span>
+                              </div>
                             )}
                           </div>
-                          <Input type="number" placeholder="Cant." className="w-16 h-8 text-sm"
-                            value={packQty[s.id] || ''}
-                            onChange={e => setPackQty(prev => ({ ...prev, [s.id]: e.target.value }))}
-                            min="0" step="any" />
+                          
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 sm:flex-none flex items-center gap-1.5">
+                              <Input type="number" placeholder="Cant." className="w-20 sm:w-16 h-10 sm:h-8 text-base sm:text-sm"
+                                value={packQty[s.id] || ''}
+                                onChange={e => setPackQty(prev => ({ ...prev, [s.id]: e.target.value }))}
+                                min="0" step="any" />
 
-                          <select
-                            value={selectedUnits[s.id] || s.unit}
-                            onChange={e => setSelectedUnits(prev => ({ ...prev, [s.id]: e.target.value }))}
-                            className="h-8 rounded-md border border-input bg-background px-1 text-xs w-16"
-                          >
-                            {unitOptions.filter(u => getBaseUnit(u) === getBaseUnit(s.unit)).map(u => (
-                              <option key={u} value={u}>{u}</option>
-                            ))}
-                          </select>
+                              <select
+                                value={selectedUnits[s.id] || s.unit}
+                                onChange={e => setSelectedUnits(prev => ({ ...prev, [s.id]: e.target.value }))}
+                                className="h-10 sm:h-8 rounded-md border border-input bg-background px-2 sm:px-1 text-sm sm:text-xs w-24 sm:w-16"
+                              >
+                                {unitOptions.filter(u => getBaseUnit(u) === getBaseUnit(s.unit)).map(u => (
+                                  <option key={u} value={u}>{u}</option>
+                                ))}
+                              </select>
+                            </div>
 
-                          <div className="flex gap-1.5 border-l pl-2 ml-1">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive" onClick={() => handleDeleteSupply(s.id)}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button size="sm" variant="outline" className="h-8 w-8 p-0 shrink-0" onClick={() => addIng(s, 'packaging')}>
-                              <Plus className="h-3 w-3" />
-                            </Button>
+                            <div className="flex gap-2 sm:gap-1.5 border-l pl-2 ml-1">
+                              <Button size="sm" variant="ghost" className="h-10 w-10 sm:h-8 sm:w-8 p-0 text-muted-foreground hover:text-destructive group" onClick={() => handleDeleteSupply(s.id)}>
+                                <Trash2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                              </Button>
+                              <Button size="sm" variant="outline" className="h-10 w-10 sm:h-8 sm:w-8 p-0 shrink-0 bg-primary/5 border-primary/20 hover:bg-primary/10" onClick={() => addIng(s, 'packaging')}>
+                                <Plus className="h-4 w-4 sm:h-3 sm:w-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -774,36 +805,46 @@ export default function CrearProducto() {
                   {packaging.length > 0 && (
                     <div className="space-y-1 pt-2 border-t">
                       {packaging.map(p => (
-                        <div key={p.id} className={cn("flex items-center justify-between text-sm py-1 border-b border-border last:border-0", p.enabled === false && "opacity-50")}>
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <div className="flex flex-col items-center gap-0.5">
-                              <Switch
-                                checked={p.enabled !== false}
-                                onCheckedChange={(checked) => {
-                                  setPackaging(prev => prev.map(item => item.id === p.id ? { ...item, enabled: checked } : item));
-                                }}
-                                className="scale-75"
-                              />
-                              <span className={cn("text-[8px] font-black uppercase tracking-tighter", p.enabled !== false ? "text-primary" : "text-muted-foreground")}>
-                                {p.enabled !== false ? 'ON' : 'OFF'}
-                              </span>
+                        <div key={p.id} className={cn("flex flex-col sm:flex-row sm:items-center gap-2 py-3 sm:py-1 border-b border-border last:border-0", p.enabled === false && "opacity-50")}>
+                          <div className="flex items-center justify-between sm:flex-1 gap-2 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="flex flex-col items-center gap-0.5">
+                                <Switch
+                                  checked={p.enabled !== false}
+                                  onCheckedChange={(checked) => {
+                                    setPackaging(prev => prev.map(item => item.id === p.id ? { ...item, enabled: checked } : item));
+                                  }}
+                                  className="scale-75"
+                                />
+                                <span className={cn("text-[8px] font-black uppercase tracking-tighter", p.enabled !== false ? "text-primary" : "text-muted-foreground")}>
+                                  {p.enabled !== false ? 'ON' : 'OFF'}
+                                </span>
+                              </div>
+                              <span className="truncate text-sm font-medium sm:font-normal">{p.name}</span>
                             </div>
-                            <span className="truncate">{p.name}</span>
+                            <button onClick={() => setPackaging(prev => prev.filter(i => i.id !== p.id))} className="text-destructive sm:hidden p-1">
+                              <X className="h-5 w-5" />
+                            </button>
                           </div>
-                          <div className="flex items-center gap-1 mx-2">
-                            <Input
-                              type="number"
-                              value={p._rawQty !== undefined ? p._rawQty : p.quantityUsed}
-                              onChange={e => updateItemQty(p.id, e.target.value, 'packaging')}
-                              className="w-14 h-7 text-xs px-1 text-center"
-                              step="any"
-                            />
-                            <span className="text-[10px] text-muted-foreground">{p.unit}</span>
+                          
+                          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-2">
+                            <div className="flex items-center gap-1.5">
+                              <Input
+                                type="number"
+                                value={p._rawQty !== undefined ? p._rawQty : p.quantityUsed}
+                                onChange={e => updateItemQty(p.id, e.target.value, 'packaging')}
+                                className="w-20 sm:w-14 h-10 sm:h-7 text-base sm:text-xs px-1 text-center font-bold sm:font-normal"
+                                step="any"
+                              />
+                              <span className="text-xs sm:text-[10px] text-muted-foreground w-8">{p.unit}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm sm:font-medium mx-1 shrink-0 w-24 sm:w-16 text-right font-bold text-primary sm:text-foreground">{formatCurrency(p.cost, user.currencySymbol)}</span>
+                              <button onClick={() => setPackaging(prev => prev.filter(i => i.id !== p.id))} className="hidden sm:block text-destructive shrink-0 hover:bg-destructive/10 p-1 rounded-md transition-colors">
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
-                          <span className="font-medium mx-2 shrink-0 w-16 text-right">{formatCurrency(p.cost)}</span>
-                          <button onClick={() => setPackaging(prev => prev.filter(i => i.id !== p.id))} className="text-destructive shrink-0 p-1">
-                            <X className="h-4 w-4" />
-                          </button>
                         </div>
                       ))}
                       <p className="font-medium text-primary text-sm mt-2">Packaging: {formatCurrency(packCost, user.currencySymbol)}</p>

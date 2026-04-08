@@ -81,17 +81,17 @@ export default function Dashboard() {
         {/* Summary Card */}
         <Card className="p-6 bg-primary text-primary-foreground rounded-3xl shadow-xl shadow-primary/20">
           <h2 className="text-xs font-bold opacity-80 uppercase tracking-widest">Resumen de {currentMonthName} {currentYear}</h2>
-          <div className="grid grid-cols-3 gap-2 mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-2 mt-4">
             <div className="space-y-1">
-              <p className="text-2xl font-black">{products.filter(p => p.active !== false).length}</p>
+              <p className="text-xl sm:text-2xl font-black">{products.filter(p => p.active !== false).length}</p>
               <p className="text-[10px] opacity-80 uppercase font-bold leading-tight">Productos<br />activos</p>
             </div>
-            <div className="space-y-1 border-l border-white/20 pl-4">
-              <p className="text-2xl font-black">{formatCurrency(totalMonthExpenses, user?.currencySymbol)}</p>
+            <div className="space-y-1 sm:border-l border-white/20 sm:pl-4">
+              <p className="text-xl sm:text-2xl font-black">{formatCurrency(totalMonthExpenses, user?.currencySymbol)}</p>
               <p className="text-[10px] opacity-80 uppercase font-bold leading-tight">Gastos de<br />este mes</p>
             </div>
-            <div className="space-y-1 border-l border-white/20 pl-4">
-              <p className="text-2xl font-black">{formatCurrency(totalProjectedProfit - totalMonthExpenses, user?.currencySymbol)}</p>
+            <div className="space-y-1 sm:border-l border-white/20 sm:pl-4">
+              <p className="text-xl sm:text-2xl font-black">{formatCurrency(totalProjectedProfit - totalMonthExpenses, user?.currencySymbol)}</p>
               <p className="text-[10px] opacity-80 uppercase font-bold leading-tight text-cta-foreground">Ganancia<br />Neta</p>
             </div>
           </div>

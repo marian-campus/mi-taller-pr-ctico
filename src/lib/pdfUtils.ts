@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { saveAs } from 'file-saver';
 import { formatCurrency } from './format';
 import { Product, Expense, UserSettings } from '@/types';
 
@@ -128,19 +129,7 @@ export const generateManagementReport = (
     doc.setTextColor(120, 120, 120);
     doc.text('* Calculado sobre el precio de venta sugerido menos costos totales (insumos, mano de obra y costos indirectos).', 14, finalY3 + 38);
 
-    // Cleanup Blob URL manually to avoid memory leaks or infinite reloads
+    // Use file-saver for robust downloads on mobile devices
     const blob = doc.output('blob');
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Cleanup isolated
-    setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }, 250);
+    saveAs(blob, `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`);
 };
