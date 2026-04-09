@@ -32,11 +32,25 @@ export default function SimuladorMix() {
     const [year, setYear] = useState(now.getFullYear());
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [preparedReport, setPreparedReport] = useState<{ blob: Blob; fileName: string; title: string } | null>(null);
+    const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
     // Reset prepared report if data changes (to ensure it's always up to date)
     useEffect(() => {
-        if (preparedReport) setPreparedReport(null);
+        if (preparedReport) {
+            setPreparedReport(null);
+            if (blobUrl) {
+                URL.revokeObjectURL(blobUrl);
+                setBlobUrl(null);
+            }
+        }
     }, [projection, month, year, products, expenses]);
+
+    // Clean up blob URL on unmount
+    useEffect(() => {
+        return () => {
+            if (blobUrl) URL.revokeObjectURL(blobUrl);
+        };
+    }, [blobUrl]);
 
     // Filtered expenses for the selected month/year
     const { monthExpenses, totalMonthExpenses } = useMemo(() => {
@@ -77,29 +91,28 @@ export default function SimuladorMix() {
     const handlePrepareReport = () => {
         if (isGeneratingPDF || !user) return;
         setIsGeneratingPDF(true);
-        // We use a small timeout to allow the loading state to render before the heavy PDF generation
+        toast.info('Preparando reporte...');
+        
         setTimeout(() => {
             try {
                 const report = createManagementReportBlob(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
+                const url = URL.createObjectURL(report.blob);
                 setPreparedReport(report);
-                toast.success('¡Reporte preparado! Ya podés descargarlo.');
+                setBlobUrl(url);
+                toast.success('¡Listo! Presioná el botón verde para bajarlo.');
             } catch (error) {
                 console.error("Error generating PDF:", error);
                 toast.error('Error al generar el PDF');
             } finally {
                 setIsGeneratingPDF(false);
             }
-        }, 100);
+        }, 300); // Slightly longer to ensure UI updates
     };
 
     const handleDownloadOnly = async () => {
         if (!preparedReport) return;
-        try {
-            await downloadReport(preparedReport.blob, preparedReport.fileName, preparedReport.title);
-        } catch (error) {
-            console.error("Error downloading PDF:", error);
-            toast.error('Error al abrir el archivo');
-        }
+        // The most direct way to trigger the download logic
+        await downloadReport(preparedReport.blob, preparedReport.fileName, preparedReport.title);
     };
 
     if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando simulador...</div></Layout>;
@@ -265,24 +278,29 @@ export default function SimuladorMix() {
                                      {isGeneratingPDF ? (
                                          <>
                                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                             Preparando Reporte...
+                                             Generando...
                                          </>
                                      ) : (
                                          <>
                                              <Rocket className="h-5 w-5" />
-                                             1. Generar Reporte
+                                             1. Preparar Reporte
                                          </>
                                      )}
                                  </Button>
                              ) : (
-                                 <Button 
-                                     onClick={handleDownloadOnly} 
-                                     variant="default"
-                                     className="w-full h-12 gap-2 text-base font-bold bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.05] animate-in zoom-in-95 duration-300"
-                                 >
-                                     <Download className="h-5 w-5" />
-                                     2. Descargar / Compartir
-                                 </Button>
+                                 <div className="space-y-3">
+                                     <Button 
+                                         onClick={handleDownloadOnly} 
+                                         variant="default"
+                                         className="w-full h-12 gap-2 text-base font-bold bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 animate-in zoom-in-95 duration-300"
+                                     >
+                                         <Download className="h-5 w-5" />
+                                         2. Bajar / Compartir
+                                     </Button>
+                                     <p className="text-[10px] text-center text-muted-foreground">
+                                         Si no descarga, probá manteniendo el botón o usando Chrome.
+                                     </p>
+                                 </div>
                              )}
                          </div>
                     </Card>
