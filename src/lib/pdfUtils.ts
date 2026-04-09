@@ -134,56 +134,71 @@ export const generateManagementReport = async (
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     // ─── MOBILE STRATEGY ────────────────────────────────────────────────────────
-    // NEVER use blob: URLs on mobile — they're blocked with "Solo http/https" error
-    // Instead use jsPDF's built-in Base64 output (data:application/pdf;base64,...)
+    // Optimized for iOS Safari, Android Chrome and In-App Browsers
     if (isMobile) {
+        console.log('[PDF] Mobile detected. Starting download sequence...');
         const blob = doc.output('blob');
 
-        // Option A: Web Share API — user can send directly via WhatsApp/Email
+        // Priority 1: Web Share API (Best for mobile, allows WhatsApp/Email/Save to Files)
         if (navigator.share && navigator.canShare) {
-            const file = new File([blob], fileName, { type: 'application/pdf' });
-            if (navigator.canShare({ files: [file] })) {
-                try {
+            try {
+                const file = new File([blob], fileName, { type: 'application/pdf' });
+                if (navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
                         title: 'Reporte de Gestión',
-                        text: `Reporte de Gestión - ${currentMonthName} ${currentYear}`,
+                        text: `Te comparto el Reporte de Gestión de ${currentMonthName} ${currentYear}.`,
                     });
                     console.log('[PDF] Shared via Web Share API ✓');
                     return;
-                } catch (shareError) {
-                    // AbortError = user cancelled, don't fall through
-                    if ((shareError as Error).name === 'AbortError') return;
-                    console.warn('[PDF] Web Share API failed, falling back to Base64:', shareError);
                 }
+            } catch (shareError) {
+                // Ignore AbortError (user cancelled share sheet)
+                if ((shareError as Error).name === 'AbortError') {
+                    console.log('[PDF] User cancelled sharing');
+                    return;
+                }
+                console.warn('[PDF] Web Share failed, trying direct download:', shareError);
             }
         }
 
-        // Option B: Base64 data URI — bypasses blob: restrictions in WebViews
-        // This works in Safari, Chrome for iOS/Android, and most in-app browsers
+        // Priority 2: FileSaver.js (Robust fallback for most mobile browsers)
         try {
-            const dataUri = doc.output('datauristring'); // data:application/pdf;base64,...
-            const link = document.createElement('a');
-            link.href = dataUri;
-            link.download = fileName;
-            link.setAttribute('download', fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            console.log('[PDF] Downloaded via Base64 data URI ✓');
-            return;
-        } catch (base64Error) {
-            console.warn('[PDF] Base64 link failed, trying window.open:', base64Error);
+            saveAs(blob, fileName);
+            console.log('[PDF] Triggered via FileSaver ✓');
+            
+            // On some iOS versions, we need to wait/check, but usually saveAs handles it
+            // If we are in a very restricted WebView, we continue to Priority 3
+            if (!/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+                return; 
+            }
+        } catch (fileSaverError) {
+            console.warn('[PDF] FileSaver failed on mobile:', fileSaverError);
         }
 
-        // Option C: window.open with data URI (last resort for mobile)
+        // Priority 3: Blob URL + window.open (Last resort, opens preview for manual save)
         try {
-            const dataUri = doc.output('datauristring');
-            window.open(dataUri, '_blank');
-            console.log('[PDF] Opened via window.open(dataUri) ✓');
-        } catch (openError) {
-            console.error('[PDF] All mobile methods failed:', openError);
-            alert('No se pudo descargar el PDF automáticamente. Intentá desde el navegador principal (Safari o Chrome).');
+            const blobUrl = URL.createObjectURL(blob);
+            const newWindow = window.open(blobUrl, '_blank');
+            
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                console.warn('[PDF] Popup blocked or failed to open');
+                // Create a manual link if popup is blocked
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = fileName;
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                }, 100);
+            }
+            console.log('[PDF] Final fallback: opened preview or triggered link ✓');
+        } catch (fallbackError) {
+            console.error('[PDF] All mobile methods failed:', fallbackError);
+            alert('No se pudo descargar el reporte. Probá abriendo la app en Chrome o Safari directamente.');
         }
         return;
     }
