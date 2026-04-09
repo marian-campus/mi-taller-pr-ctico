@@ -135,7 +135,7 @@ export const generateManagementReport = async (
     const blobToBase64 = (blob: Blob): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string);
+            reader.onloadend = () => resolve(reader.result as string || '');
             reader.onerror = reject;
             reader.readAsDataURL(blob);
         });
@@ -172,28 +172,46 @@ export const generateManagementReport = async (
             saveAs(blob, fileName);
             console.log("PDF saved successfully via FileSaver.js");
         } catch (fileSaverError) {
-            console.error("FileSaver.js failed, trying Base64 fallback:", fileSaverError);
+            console.error("FileSaver.js failed, trying next fallback:", fileSaverError);
             
-            // 3. Last resort: Base64 Data URL
-            const base64data = await blobToBase64(blob);
-            const link = document.createElement('a');
-            link.href = base64data;
-            link.download = fileName;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            console.log("PDF download triggered via Base64 fallback");
+            // 3. Fallback: window.open (Blob URL) - Good for iOS Safari
+            try {
+                const url = URL.createObjectURL(blob);
+                const win = window.open(url, '_blank');
+                if (!win) throw new Error("Popup blocked");
+                console.log("PDF opened in new tab via Blob URL");
+            } catch (windowOpenError) {
+                console.error("window.open(blob) failed, trying Base64:", windowOpenError);
+                
+                // 4. Last resort: Base64 Data URL (can skip some 'http/https only' blocks in WebViews)
+                const base64data = await blobToBase64(blob);
+                try {
+                    // Try direct download link first
+                    const link = document.createElement('a');
+                    link.href = base64data;
+                    link.download = fileName;
+                    link.setAttribute('download', fileName);
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    console.log("PDF download triggered via Base64 fallback link");
+                } catch (linkError) {
+                    console.error("Base64 link failed, trying window.location.href:", linkError);
+                    // Most aggressive fallback: redirect current window or open new
+                    window.location.href = base64data;
+                }
+            }
         }
     } catch (error) {
-        console.error("Critical error in PDF generation/download flow:", error);
-        alert("Hubo un problema al generar o descargar el PDF. Intente compartirlo o guardarlo manualmente si aparece en pantalla.");
+        console.error("Critical error in PDF flow:", error);
         
-        // Final desperate attempt: context.doc.save()
+        // Final attempt using standard jsPDF save
         try {
             doc.save(fileName);
         } catch (finalError) {
             console.error("doc.save also failed:", finalError);
+            alert("No se pudo descargar automáticamente. Por favor use un navegador como Safari o Chrome.");
         }
     }
 };
