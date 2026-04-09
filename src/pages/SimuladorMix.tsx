@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { AlertCircle, Rocket, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createManagementReportBlob, downloadReport } from '@/lib/pdfUtils';
+import { generateManagementReport } from '@/lib/pdfUtils';
 
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -31,26 +31,15 @@ export default function SimuladorMix() {
     const [month, setMonth] = useState(now.getMonth());
     const [year, setYear] = useState(now.getFullYear());
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-    const [preparedReport, setPreparedReport] = useState<{ blob: Blob; fileName: string; title: string } | null>(null);
-    const [blobUrl, setBlobUrl] = useState<string | null>(null);
+    const [preparedUrl, setPreparedUrl] = useState<string | null>(null);
 
-    // Reset prepared report if data changes (to ensure it's always up to date)
+    // Reset prepared URL if data changes
     useEffect(() => {
-        if (preparedReport) {
-            setPreparedReport(null);
-            if (blobUrl) {
-                URL.revokeObjectURL(blobUrl);
-                setBlobUrl(null);
-            }
+        if (preparedUrl) {
+            setPreparedUrl(null);
         }
     }, [projection, month, year, products, expenses]);
 
-    // Clean up blob URL on unmount
-    useEffect(() => {
-        return () => {
-            if (blobUrl) URL.revokeObjectURL(blobUrl);
-        };
-    }, [blobUrl]);
 
     // Filtered expenses for the selected month/year
     const { monthExpenses, totalMonthExpenses } = useMemo(() => {
@@ -88,31 +77,29 @@ export default function SimuladorMix() {
         };
     }, [totalMonthExpenses, totalProjectedProfit]);
 
-    const handlePrepareReport = () => {
+    const handleGenerateReport = async () => {
         if (isGeneratingPDF || !user) return;
         setIsGeneratingPDF(true);
-        toast.info('Preparando reporte...');
         
-        setTimeout(() => {
-            try {
-                const report = createManagementReportBlob(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
-                const url = URL.createObjectURL(report.blob);
-                setPreparedReport(report);
-                setBlobUrl(url);
-                toast.success('¡Listo! Presioná el botón verde para bajarlo.');
-            } catch (error) {
-                console.error("Error generating PDF:", error);
-                toast.error('Error al generar el PDF');
-            } finally {
-                setIsGeneratingPDF(false);
-            }
-        }, 300); // Slightly longer to ensure UI updates
-    };
-
-    const handleDownloadOnly = async () => {
-        if (!preparedReport) return;
-        // The most direct way to trigger the download logic
-        await downloadReport(preparedReport.blob, preparedReport.fileName, preparedReport.title);
+        try {
+            await generateManagementReport(
+                user, 
+                products, 
+                monthExpenses, 
+                totalMonthExpenses, 
+                totalProjectedProfit, 
+                projection, 
+                month, 
+                year
+            );
+            // Optionally we could track success to show a "Download Again" button
+            // but the function already triggers the download.
+        } catch (error) {
+            console.error("Error generating PDF:", error);
+            // Error is already toasted in generateManagementReport
+        } finally {
+            setIsGeneratingPDF(false);
+        }
     };
 
     if (!context || !context.user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando simulador...</div></Layout>;
@@ -264,44 +251,28 @@ export default function SimuladorMix() {
                          </div>
                          <div className="relative space-y-4">
                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                 {preparedReport 
-                                    ? "¡Tu reporte está listo! Hacé click abajo para descargarlo o compartirlo por WhatsApp." 
-                                    : `Prepará el análisis completo de tu negocio para ${months[month]} ${year}.`}
+                                 Analizá el rendimiento de tu negocio para {months[month]} {year} con un reporte profesional.
                              </p>
-                             
-                             {!preparedReport ? (
-                                 <Button 
-                                     onClick={handlePrepareReport} 
-                                     disabled={isGeneratingPDF}
-                                     className="w-full h-12 gap-2 text-base font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02]"
-                                 >
-                                     {isGeneratingPDF ? (
-                                         <>
-                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                             Generando...
-                                         </>
-                                     ) : (
-                                         <>
-                                             <Rocket className="h-5 w-5" />
-                                             1. Preparar Reporte
-                                         </>
-                                     )}
-                                 </Button>
-                             ) : (
-                                 <div className="space-y-3">
-                                     <Button 
-                                         onClick={handleDownloadOnly} 
-                                         variant="default"
-                                         className="w-full h-12 gap-2 text-base font-bold bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 animate-in zoom-in-95 duration-300"
-                                     >
+                             <Button 
+                                 onClick={handleGenerateReport} 
+                                 disabled={isGeneratingPDF}
+                                 className="w-full h-12 gap-2 text-base font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] bg-primary"
+                             >
+                                 {isGeneratingPDF ? (
+                                     <>
+                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                         Generando en servidor...
+                                     </>
+                                 ) : (
+                                     <>
                                          <Download className="h-5 w-5" />
-                                         2. Bajar / Compartir
-                                     </Button>
-                                     <p className="text-[10px] text-center text-muted-foreground">
-                                         Si no descarga, probá manteniendo el botón o usando Chrome.
-                                     </p>
-                                 </div>
-                             )}
+                                         Descargar Reporte PDF
+                                     </>
+                                 )}
+                             </Button>
+                             <p className="text-[9px] text-center text-muted-foreground mt-2">
+                                 El reporte se genera en el servidor y se descarga automáticamente.
+                             </p>
                          </div>
                     </Card>
                 </div>
