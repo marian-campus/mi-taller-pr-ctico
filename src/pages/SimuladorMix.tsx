@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { AlertCircle, Rocket, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { generateManagementReport } from '@/lib/pdfUtils';
+import { createManagementReportBlob, downloadReport } from '@/lib/pdfUtils';
 
 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
@@ -31,6 +31,12 @@ export default function SimuladorMix() {
     const [month, setMonth] = useState(now.getMonth());
     const [year, setYear] = useState(now.getFullYear());
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [preparedReport, setPreparedReport] = useState<{ blob: Blob; fileName: string; title: string } | null>(null);
+
+    // Reset prepared report if data changes (to ensure it's always up to date)
+    useEffect(() => {
+        if (preparedReport) setPreparedReport(null);
+    }, [projection, month, year, products, expenses]);
 
     // Filtered expenses for the selected month/year
     const { monthExpenses, totalMonthExpenses } = useMemo(() => {
@@ -68,17 +74,31 @@ export default function SimuladorMix() {
         };
     }, [totalMonthExpenses, totalProjectedProfit]);
 
-    const handleGenerateReport = async () => {
+    const handlePrepareReport = () => {
         if (isGeneratingPDF || !user) return;
         setIsGeneratingPDF(true);
+        // We use a small timeout to allow the loading state to render before the heavy PDF generation
+        setTimeout(() => {
+            try {
+                const report = createManagementReportBlob(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
+                setPreparedReport(report);
+                toast.success('¡Reporte preparado! Ya podés descargarlo.');
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                toast.error('Error al generar el PDF');
+            } finally {
+                setIsGeneratingPDF(false);
+            }
+        }, 100);
+    };
+
+    const handleDownloadOnly = async () => {
+        if (!preparedReport) return;
         try {
-            await generateManagementReport(user, products, monthExpenses, totalMonthExpenses, totalProjectedProfit, projection, month, year);
-            toast.success('Reporte generado correctamente');
+            await downloadReport(preparedReport.blob, preparedReport.fileName, preparedReport.title);
         } catch (error) {
-            console.error("Error generating PDF:", error);
-            toast.error('Error al generar el PDF');
-        } finally {
-            setIsGeneratingPDF(false);
+            console.error("Error downloading PDF:", error);
+            toast.error('Error al abrir el archivo');
         }
     };
 
@@ -231,26 +251,39 @@ export default function SimuladorMix() {
                          </div>
                          <div className="relative space-y-4">
                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                 Descargá el análisis completo de tu negocio para <strong>{months[month]} {year}</strong>. 
-                                 Incluye gastos, listado de precios y tu proyección de rentabilidad.
+                                 {preparedReport 
+                                    ? "¡Tu reporte está listo! Hacé click abajo para descargarlo o compartirlo por WhatsApp." 
+                                    : `Prepará el análisis completo de tu negocio para ${months[month]} ${year}.`}
                              </p>
-                             <Button 
-                                 onClick={handleGenerateReport} 
-                                 disabled={isGeneratingPDF}
-                                 className="w-full h-12 gap-2 text-base font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02]"
-                             >
-                                 {isGeneratingPDF ? (
-                                     <>
-                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                         Generando Reporte...
-                                     </>
-                                 ) : (
-                                     <>
-                                         <Download className="h-5 w-5" />
-                                         Descargar Reporte de Gestión
-                                     </>
-                                 )}
-                             </Button>
+                             
+                             {!preparedReport ? (
+                                 <Button 
+                                     onClick={handlePrepareReport} 
+                                     disabled={isGeneratingPDF}
+                                     className="w-full h-12 gap-2 text-base font-bold shadow-lg shadow-primary/10 transition-all hover:scale-[1.02]"
+                                 >
+                                     {isGeneratingPDF ? (
+                                         <>
+                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                             Preparando Reporte...
+                                         </>
+                                     ) : (
+                                         <>
+                                             <Rocket className="h-5 w-5" />
+                                             1. Generar Reporte
+                                         </>
+                                     )}
+                                 </Button>
+                             ) : (
+                                 <Button 
+                                     onClick={handleDownloadOnly} 
+                                     variant="default"
+                                     className="w-full h-12 gap-2 text-base font-bold bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.05] animate-in zoom-in-95 duration-300"
+                                 >
+                                     <Download className="h-5 w-5" />
+                                     2. Descargar / Compartir
+                                 </Button>
+                             )}
                          </div>
                     </Card>
                 </div>
