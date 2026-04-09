@@ -131,20 +131,69 @@ export const generateManagementReport = async (
 
     const fileName = `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`;
     
-    // Use doc.save() which is the standard way for jsPDF to handle downloads
-    // It has better internal fallbacks for different environments
+    // Convert blob to Base64 for fallback
+    const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    };
+
     try {
-        doc.save(fileName);
-    } catch (error) {
-        console.error("Error saving PDF with doc.save, trying fallback:", error);
-        // Fallback for some mobile browsers (like Samsung Internet) that might block direct blob downloads
+        const blob = doc.output('blob');
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        // 1. Try Web Share API on mobile if supported
+        if (isMobile && navigator.share) {
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: 'Reporte de Gestión',
+                        text: `Reporte de Gestión - ${currentMonthName} ${currentYear}`,
+                    });
+                    console.log("PDF shared successfully via Web Share API");
+                    return;
+                } catch (shareError) {
+                    if ((shareError as Error).name !== 'AbortError') {
+                        console.error("Web Share API failed:", shareError);
+                    } else {
+                        return; // User cancelled the share sheet
+                    }
+                }
+            }
+        }
+
+        // 2. Try FileSaver.js (most robust for blobs)
         try {
-            const blob = doc.output('blob');
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-        } catch (fallbackError) {
-            console.error("Fallback also failed:", fallbackError);
-            alert("No se pudo descargar el archivo. Por favor, intente desde un navegador diferente.");
+            saveAs(blob, fileName);
+            console.log("PDF saved successfully via FileSaver.js");
+        } catch (fileSaverError) {
+            console.error("FileSaver.js failed, trying Base64 fallback:", fileSaverError);
+            
+            // 3. Last resort: Base64 Data URL
+            const base64data = await blobToBase64(blob);
+            const link = document.createElement('a');
+            link.href = base64data;
+            link.download = fileName;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log("PDF download triggered via Base64 fallback");
+        }
+    } catch (error) {
+        console.error("Critical error in PDF generation/download flow:", error);
+        alert("Hubo un problema al generar o descargar el PDF. Intente compartirlo o guardarlo manualmente si aparece en pantalla.");
+        
+        // Final desperate attempt: context.doc.save()
+        try {
+            doc.save(fileName);
+        } catch (finalError) {
+            console.error("doc.save also failed:", finalError);
         }
     }
 };
