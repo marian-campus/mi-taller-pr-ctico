@@ -130,88 +130,77 @@ export const generateManagementReport = async (
     doc.text('* Calculado sobre el precio de venta sugerido menos costos totales (insumos, mano de obra y costos indirectos).', 14, finalY3 + 38);
 
     const fileName = `Reporte_Gestion_${currentMonthName}_${currentYear}.pdf`;
-    
-    // Convert blob to Base64 for fallback
-    const blobToBase64 = (blob: Blob): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result as string || '');
-            reader.onerror = reject;
-            reader.readAsDataURL(blob);
-        });
-    };
 
-    try {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    // ─── MOBILE STRATEGY ────────────────────────────────────────────────────────
+    // NEVER use blob: URLs on mobile — they're blocked with "Solo http/https" error
+    // Instead use jsPDF's built-in Base64 output (data:application/pdf;base64,...)
+    if (isMobile) {
         const blob = doc.output('blob');
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-        // 1. Try Web Share API on mobile if supported
-        if (isMobile && navigator.share) {
+        // Option A: Web Share API — user can send directly via WhatsApp/Email
+        if (navigator.share && navigator.canShare) {
             const file = new File([blob], fileName, { type: 'application/pdf' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            if (navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
                         files: [file],
                         title: 'Reporte de Gestión',
                         text: `Reporte de Gestión - ${currentMonthName} ${currentYear}`,
                     });
-                    console.log("PDF shared successfully via Web Share API");
+                    console.log('[PDF] Shared via Web Share API ✓');
                     return;
                 } catch (shareError) {
-                    if ((shareError as Error).name !== 'AbortError') {
-                        console.error("Web Share API failed:", shareError);
-                    } else {
-                        return; // User cancelled the share sheet
-                    }
+                    // AbortError = user cancelled, don't fall through
+                    if ((shareError as Error).name === 'AbortError') return;
+                    console.warn('[PDF] Web Share API failed, falling back to Base64:', shareError);
                 }
             }
         }
 
-        // 2. Try FileSaver.js (most robust for blobs)
+        // Option B: Base64 data URI — bypasses blob: restrictions in WebViews
+        // This works in Safari, Chrome for iOS/Android, and most in-app browsers
         try {
-            saveAs(blob, fileName);
-            console.log("PDF saved successfully via FileSaver.js");
-        } catch (fileSaverError) {
-            console.error("FileSaver.js failed, trying next fallback:", fileSaverError);
-            
-            // 3. Fallback: window.open (Blob URL) - Good for iOS Safari
-            try {
-                const url = URL.createObjectURL(blob);
-                const win = window.open(url, '_blank');
-                if (!win) throw new Error("Popup blocked");
-                console.log("PDF opened in new tab via Blob URL");
-            } catch (windowOpenError) {
-                console.error("window.open(blob) failed, trying Base64:", windowOpenError);
-                
-                // 4. Last resort: Base64 Data URL (can skip some 'http/https only' blocks in WebViews)
-                const base64data = await blobToBase64(blob);
-                try {
-                    // Try direct download link first
-                    const link = document.createElement('a');
-                    link.href = base64data;
-                    link.download = fileName;
-                    link.setAttribute('download', fileName);
-                    link.target = '_blank';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    console.log("PDF download triggered via Base64 fallback link");
-                } catch (linkError) {
-                    console.error("Base64 link failed, trying window.location.href:", linkError);
-                    // Most aggressive fallback: redirect current window or open new
-                    window.location.href = base64data;
-                }
-            }
+            const dataUri = doc.output('datauristring'); // data:application/pdf;base64,...
+            const link = document.createElement('a');
+            link.href = dataUri;
+            link.download = fileName;
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            console.log('[PDF] Downloaded via Base64 data URI ✓');
+            return;
+        } catch (base64Error) {
+            console.warn('[PDF] Base64 link failed, trying window.open:', base64Error);
         }
-    } catch (error) {
-        console.error("Critical error in PDF flow:", error);
-        
-        // Final attempt using standard jsPDF save
+
+        // Option C: window.open with data URI (last resort for mobile)
+        try {
+            const dataUri = doc.output('datauristring');
+            window.open(dataUri, '_blank');
+            console.log('[PDF] Opened via window.open(dataUri) ✓');
+        } catch (openError) {
+            console.error('[PDF] All mobile methods failed:', openError);
+            alert('No se pudo descargar el PDF automáticamente. Intentá desde el navegador principal (Safari o Chrome).');
+        }
+        return;
+    }
+
+    // ─── DESKTOP STRATEGY ───────────────────────────────────────────────────────
+    // On desktop, FileSaver + blob works correctly everywhere
+    try {
+        const blob = doc.output('blob');
+        saveAs(blob, fileName);
+        console.log('[PDF] Downloaded via FileSaver.js (desktop) ✓');
+    } catch (desktopError) {
+        console.error('[PDF] FileSaver failed on desktop, trying doc.save:', desktopError);
         try {
             doc.save(fileName);
         } catch (finalError) {
-            console.error("doc.save also failed:", finalError);
-            alert("No se pudo descargar automáticamente. Por favor use un navegador como Safari o Chrome.");
+            console.error('[PDF] doc.save also failed:', finalError);
+            alert('No se pudo descargar el PDF. Por favor intentá desde otro navegador.');
         }
     }
 };
