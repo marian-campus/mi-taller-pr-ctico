@@ -40,7 +40,8 @@ export default function Layout({ children, title }: LayoutProps) {
       <FreemiumModal />
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-64 fixed inset-y-0 left-0 bg-card border-r border-border z-30">
-        <div className="flex items-center gap-2 px-6 py-4 border-b border-border/50 shrink-0">
+        <div className="flex items-center gap-3 px-6 py-6 border-b border-border/50 shrink-0">
+          <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
           <span className="font-bold text-lg text-primary tracking-tight">Mi Taller Contable</span>
         </div>
         <nav className="flex-1 overflow-y-auto p-4 space-y-1 min-h-0 bg-card/50">
@@ -102,6 +103,7 @@ export default function Layout({ children, title }: LayoutProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
+          <img src="/logo.png" alt="Logo" className="h-7 w-7 object-contain md:hidden" />
           <span className="font-bold text-lg text-primary tracking-tight md:hidden">Mi Taller Contable</span>
         </div>
         <div className="flex items-center gap-2">
