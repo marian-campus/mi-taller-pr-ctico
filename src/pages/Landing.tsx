@@ -133,7 +133,8 @@ export default function Landing() {
                                 <button
                                     type="button"
                                     onClick={() => navigate('/recover')}
-                                    className="text-[11px] text-primary hover:underline font-medium"
+                                    className="text-[11px] text-primary hover:underline font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+                                    aria-label="Olvidé mi contraseña"
                                 >
                                     ¿Olvidaste tu contraseña?
                                 </button>
@@ -162,7 +163,8 @@ export default function Landing() {
                         <span className="text-muted-foreground mr-1">¿No tienes cuenta?</span>
                         <button
                             onClick={() => navigate('/register')}
-                            className="text-primary font-bold hover:underline"
+                            className="text-primary font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+                            aria-label="Registrarse en Mi Taller Contable gratis"
                         >
                             Regístrate gratis
                         </button>
