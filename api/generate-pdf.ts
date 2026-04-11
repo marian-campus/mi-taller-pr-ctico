@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import fs from 'fs';
+import path from 'path';
 
 // Helper to format currency (local port of src/lib/format.ts)
 const formatCurrency = (amount: number, symbol: string = '$'): string => {
@@ -61,17 +63,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const currentMonthName = months[reportMonth];
     
     const doc = new jsPDF();
+    
+    // 2.1 Logo y Encabezado
+    try {
+      const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+      if (fs.existsSync(logoPath)) {
+        const logoData = fs.readFileSync(logoPath).toString('base64');
+        doc.addImage(logoData, 'PNG', 14, 10, 18, 18);
+      }
+    } catch (e) {
+      console.error('Error loading logo in PDF:', e);
+    }
+
     const title = `Reporte de Gestión - ${currentMonthName} ${reportYear}`;
 
     doc.setFontSize(20);
-    doc.text(String(title), 14, 22);
+    doc.text(String(title), 14, 38);
     doc.setFontSize(10);
-    doc.text(`Negocio: ${userSettings.businessName}`, 14, 30);
-    doc.text(`Emprendedor: ${userSettings.name}`, 14, 35);
+    doc.text(`Negocio: ${userSettings.businessName}`, 14, 46);
+    doc.text(`Emprendedor: ${userSettings.name}`, 14, 51);
 
     const activeExpenses = expenses.filter((e: any) => e.includedInFixedCosts !== false);
     autoTable(doc, {
-      startY: 55,
+      startY: 65,
       head: [['Descripción', 'Categoría', 'Monto']],
       body: activeExpenses.map((e: any) => [e.description, e.category, formatCurrency(e.amount, userSettings.currencySymbol)]),
       foot: [['Total Gastos', '', formatCurrency(totalExpenses, userSettings.currencySymbol)]],
