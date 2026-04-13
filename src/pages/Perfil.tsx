@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { useApp } from '@/context/AppContext';
 import { Card } from '@/components/ui/card';
@@ -17,11 +17,41 @@ export default function Perfil() {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
+  const [form, setForm] = useState({
+    businessName: user?.businessName || '',
+    name: user?.name || '',
+    country: user?.country || '',
+    language: user?.language || '',
+    currencySymbol: user?.currencySymbol || '$',
+  });
+
+  // Maintain local state if user changes from other sources
+  useEffect(() => {
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        businessName: user.businessName || '',
+        name: user.name || '',
+        country: user.country || '',
+        language: user.language || '',
+        currencySymbol: user.currencySymbol || '$',
+      }));
+    }
+  }, [user]);
 
   if (!user) return <Layout title="Cargando..."><div className="p-8 text-center text-muted-foreground">Cargando perfil...</div></Layout>;
 
-  const handleUpdateField = async (field: string, val: any) => {
-    await updateProfile({ [field]: val });
+  const updateForm = (field: string, val: any) => {
+    setForm(prev => ({ ...prev, [field]: val }));
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await updateProfile(form);
+      toast.success('¡Cambios guardados con éxito!');
+    } catch (error) {
+      toast.error('Error al guardar el perfil');
+    }
   };
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,7 +78,7 @@ export default function Perfil() {
 
       // 3. Update Profile
       await updateProfile({ logoUrl: publicUrl });
-      toast.success('Logo actualizado correctamente');
+      toast.success('¡Cambios guardados con éxito!');
     } catch (error: any) {
       console.error('Error uploading logo:', error);
       toast.error(`Error: ${error.message || 'No se pudo subir la imagen'}`);
@@ -74,7 +104,7 @@ export default function Perfil() {
                 ) : (
                   <div className="flex flex-col items-center justify-center">
                     <span className="text-3xl font-black text-primary/40 leading-none">
-                      {user.businessName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'MN'}
+                      {form.businessName?.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) || 'MN'}
                     </span>
                   </div>
                 )}
@@ -90,7 +120,7 @@ export default function Perfil() {
               </label>
             </div>
             <div>
-              <h2 className="text-xl font-black text-foreground">{user.businessName || 'Tu Negocio'}</h2>
+              <h2 className="text-xl font-black text-foreground">{form.businessName || 'Tu Negocio'}</h2>
             </div>
           </div>
 
@@ -98,8 +128,8 @@ export default function Perfil() {
             <div className="space-y-2">
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Nombre del Emprendimiento</Label>
               <Input
-                value={user.businessName}
-                onChange={e => handleUpdateField('businessName', e.target.value)}
+                value={form.businessName}
+                onChange={e => updateForm('businessName', e.target.value)}
                 placeholder="Ej: Dulces de Maru"
                 className="rounded-xl h-12 bg-background border-none shadow-sm focus-visible:ring-primary text-base"
               />
@@ -107,8 +137,8 @@ export default function Perfil() {
             <div className="space-y-2">
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Tu Nombre de Usuario</Label>
               <Input
-                value={user.name}
-                onChange={e => handleUpdateField('name', e.target.value)}
+                value={form.name}
+                onChange={e => updateForm('name', e.target.value)}
                 placeholder="Tu nombre"
                 className="rounded-xl h-11 bg-background/50"
               />
@@ -146,8 +176,8 @@ export default function Perfil() {
             <div className="p-3">
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">País / Región</Label>
               <select
-                value={user.country}
-                onChange={e => handleUpdateField('country', e.target.value)}
+                value={form.country}
+                onChange={e => updateForm('country', e.target.value)}
                 className="w-full h-10 mt-1 rounded-xl border-none bg-muted px-3 text-sm font-semibold focus:ring-2 focus:ring-primary"
               >
                 {countries.map(c => <option key={c} value={c}>{c}</option>)}
@@ -157,8 +187,8 @@ export default function Perfil() {
             <div className="p-3">
               <Label className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Idioma</Label>
               <select
-                value={user.language}
-                onChange={e => handleUpdateField('language', e.target.value)}
+                value={form.language}
+                onChange={e => updateForm('language', e.target.value)}
                 className="w-full h-10 mt-1 rounded-xl border-none bg-muted px-3 text-sm font-semibold focus:ring-2 focus:ring-primary"
               >
                 <option value="es-AR">Español (Argentina)</option>
@@ -179,10 +209,10 @@ export default function Perfil() {
                 ].map(curr => (
                   <button
                     key={curr.code}
-                    onClick={() => handleUpdateField('currencySymbol', curr.code)}
+                    onClick={() => updateForm('currencySymbol', curr.code)}
                     className={cn(
                       "flex-1 py-3 rounded-xl text-xs font-bold transition-all border-2",
-                      user.currencySymbol === curr.code ? "bg-primary border-primary text-white" : "bg-muted border-transparent text-muted-foreground"
+                      form.currencySymbol === curr.code ? "bg-primary border-primary text-white" : "bg-muted border-transparent text-muted-foreground"
                     )}
                   >
                     {curr.code}
@@ -191,6 +221,13 @@ export default function Perfil() {
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Save Button */}
+        <div className="px-1 mt-4">
+          <Button onClick={handleSaveProfile} className="w-full h-14 text-base font-bold shadow-xl shadow-primary/20 gap-2 rounded-2xl">
+            ¡Guardar Cambios!
+          </Button>
         </div>
 
         {/* Footer info & Logout */}

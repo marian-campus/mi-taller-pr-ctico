@@ -81,7 +81,7 @@ export default function Bolsillo() {
         businessDescription: form.businessDescription,
         mainProducts: form.mainProducts
       });
-      toast.success('Configuración guardada');
+      toast.success('¡Cambios guardados con éxito!');
     } catch (err) {
       toast.error('Error al guardar configuración');
     }

@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Obtener el ID del usuario desde el header de autorización (si existe)
     // O usar un ID genérico si no lo pasamos, pero para seguridad es mejor identificarlo.
-    const authHeader = req.headers.get?.('authorization') || req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     let userId = 'anonymous';
     
     if (authHeader && typeof authHeader === 'string') {
@@ -111,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const qty = parseInt(proj.qty) || 0;
       const profitPerUnit = (p.sellingPrice || 0) - p.totalCost;
       return [p.name, qty.toString(), formatCurrency(profitPerUnit, userSettings.currencySymbol), formatCurrency(profitPerUnit * qty, userSettings.currencySymbol)];
-    }).filter(row => row[1] !== '0');
+    }).filter((row: any[]) => row[1] !== '0');
 
     autoTable(doc, {
       startY: finalY2 + 5,
