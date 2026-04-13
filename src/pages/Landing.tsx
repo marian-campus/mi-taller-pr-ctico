@@ -108,7 +108,7 @@ export default function Landing() {
                         Mi Taller <span className="text-primary">Contable</span>
                     </h1>
                     <p className="text-muted-foreground text-sm">
-                        Calculá tus costos sin enloquecer
+                        Calculá tus costos gastronómicos
                     </p>
                 </div>
 
