@@ -217,22 +217,28 @@ export default function SimuladorMix() {
                     </div>
 
                     <div className={cn(
-                        "p-4 rounded-xl text-sm font-medium flex gap-3 items-start",
-                        !isBreakEvenReached
-                            ? "bg-red-100 text-red-900 border border-red-200"
-                            : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                        "p-4 rounded-xl text-lg font-bold flex gap-3 items-center justify-between",
+                        netProfit < 0
+                            ? "bg-red-100 text-red-600 border border-red-200"
+                            : netProfit > 0
+                                ? "bg-emerald-100 text-emerald-600 border border-emerald-200"
+                                : "bg-gray-100 text-gray-700 border border-gray-200"
                     )}>
-                        {!isBreakEvenReached ? (
-                            <>
-                                <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
-                                <p>Te faltan <strong>{formatCurrency(Math.abs(netProfit), user?.currencySymbol)}</strong> para cubrir tus gastos de <strong>{months[month]}</strong> (<strong>{formatCurrency(totalMonthExpenses, user?.currencySymbol)}</strong>).</p>
-                            </>
-                        ) : (
-                            <>
-                                <Rocket className="h-5 w-5 shrink-0 text-emerald-600" />
-                                <p>¡Punto de equilibrio alcanzado! Estás cubriendo tus gastos y te sobran <strong>{formatCurrency(netProfit, user?.currencySymbol)}</strong> de ganancia neta.</p>
-                            </>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {netProfit < 0 ? (
+                                <AlertCircle className="h-6 w-6 shrink-0" />
+                            ) : (
+                                <Rocket className="h-6 w-6 shrink-0" />
+                            )}
+                            <span>
+                                {netProfit < 0 && "Pérdida estimada"}
+                                {netProfit > 0 && "Ganancia estimada"}
+                                {netProfit === 0 && "Punto de equilibrio (sin ganancias ni pérdidas)"}
+                            </span>
+                        </div>
+                        <span className="text-2xl">
+                            {formatCurrency(netProfit, user?.currencySymbol)}
+                        </span>
                     </div>
                 </Card>
 

@@ -10,7 +10,10 @@ const corsHeaders = {
 
 // Helper to format currency (local port of src/lib/format.ts)
 const formatCurrency = (amount: number, symbol: string = '$'): string => {
-  return symbol + ' ' + amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isNegative = amount < 0;
+  const absAmount = Math.abs(amount);
+  const formatted = absAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return isNegative ? `-${symbol} ${formatted}` : `${symbol} ${formatted}`;
 };
 
 serve(async (req) => {
@@ -101,14 +104,24 @@ serve(async (req) => {
       headStyles: { fillColor: [240, 100, 100] }
     });
 
-    // Resumen
     const finalY3 = (doc as any).lastAutoTable.finalY + 15;
     const netProfit = totalProjectedProfit - totalExpenses;
     doc.setFontSize(14);
     doc.text(`Total Bruto: ${formatCurrency(totalProjectedProfit, userSettings.currencySymbol)}`, 14, finalY3 + 10);
     doc.text(`Gastos: ${formatCurrency(totalExpenses, userSettings.currencySymbol)}`, 14, finalY3 + 20);
-    doc.setTextColor(netProfit >= 0 ? 0 : 200, netProfit >= 150 ? 150 : 0, 0); // Corrected color logic slightly for simplicity
-    doc.text(`GANANCIA NETA: ${formatCurrency(netProfit, userSettings.currencySymbol)}`, 14, finalY3 + 30);
+    
+    let resultLabel = 'Punto de equilibrio (sin ganancias ni pérdidas)';
+    if (netProfit > 0) {
+      resultLabel = 'Ganancia estimada';
+      doc.setTextColor(22, 163, 74);
+    } else if (netProfit < 0) {
+      resultLabel = 'Pérdida estimada';
+      doc.setTextColor(220, 38, 38);
+    } else {
+      doc.setTextColor(0, 0, 0);
+    }
+    
+    doc.text(`${resultLabel}: ${formatCurrency(netProfit, userSettings.currencySymbol)}`, 14, finalY3 + 30);
 
     const fileName = `Reporte_${currentMonthName}_${reportYear}_${Date.now()}.pdf`;
     const pdfOutput = doc.output('arraybuffer');

@@ -1,3 +1,6 @@
 export const formatCurrency = (amount: number, symbol: string = '$'): string => {
-  return symbol + ' ' + amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isNegative = amount < 0;
+  const absAmount = Math.abs(amount);
+  const formatted = absAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return isNegative ? `-${symbol} ${formatted}` : `${symbol} ${formatted}`;
 };
