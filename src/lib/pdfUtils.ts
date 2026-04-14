@@ -68,6 +68,18 @@ export const generateManagementReport = async (
         
         // Trigger download
         downloadReportFromUrl(data.url);
+        
+        // 🎉 Mensaje especial para validadores (aparece 2s después para no interrumpir la descarga)
+        setTimeout(() => {
+            toast.success(
+                '¡Gracias por probar la app! No olvides completar la encuesta de feedback 📋',
+                {
+                    id: 'feedback-reminder',
+                    duration: 8000,
+                    description: 'Tu opinión es muy importante para mejorar Mi Taller Contable.',
+                }
+            );
+        }, 2000);
 
     } catch (err: any) {
         console.error("[PDF] Error in server-side generation:", err);

@@ -23,5 +23,17 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(
   supabaseUrl || '',
-  supabaseAnonKey || ''
+  supabaseAnonKey || '',
+  {
+    auth: {
+      // Persist session in localStorage so mobile users don't log in every time
+      persistSession: true,
+      // Automatically refresh the JWT token before it expires
+      autoRefreshToken: true,
+      // Detect auth state from URL hash (needed for email confirmation links)
+      detectSessionInUrl: true,
+      // Use localStorage for persistence across browser close/reopen
+      storage: window.localStorage,
+    }
+  }
 );
