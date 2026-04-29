@@ -159,15 +159,17 @@ export default function Landing() {
                         </Button>
                     </form>
 
-                    <div className="text-center text-sm pt-2">
-                        <span className="text-muted-foreground mr-1">¿No tienes cuenta?</span>
-                        <button
+                    <div className="text-center space-y-4 pt-4 border-t border-border/50">
+                        <p className="text-sm text-muted-foreground font-medium">¿Nuevo en Mi Taller Contable?</p>
+                        <Button
+                            type="button"
+                            variant="outline"
                             onClick={() => navigate('/register')}
-                            className="text-primary font-bold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-sm"
+                            className="w-full h-12 text-lg font-bold rounded-xl border-primary text-primary hover:bg-primary/10 transition-all active:scale-95"
                             aria-label="Registrarse en Mi Taller Contable gratis"
                         >
-                            Regístrate gratis
-                        </button>
+                            Crear cuenta gratis
+                        </Button>
                     </div>
 
                     {user && !contextLoading && (

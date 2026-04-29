@@ -92,8 +92,14 @@ export default function SimuladorMix() {
                 month, 
                 year
             );
-            // Optionally we could track success to show a "Download Again" button
-            // but the function already triggers the download.
+            
+            setTimeout(() => {
+                toast.success('¡Gracias por probar la app! No olvides completar la encuesta de feedback', {
+                    duration: 8000,
+                    icon: '🎉'
+                });
+            }, 1000);
+            
         } catch (error) {
             console.error("Error generating PDF:", error);
             // Error is already toasted in generateManagementReport
